@@ -1,0 +1,7 @@
+(Over-)Writing setup.sh, setup.bash, and setup.zsh in /home/jgflores/code/Golfred/golem/jade_workspace
+
+rosinstall update complete.
+
+Type 'source /home/jgflores/code/Golfred/golem/jade_workspace/setup.bash' to change into this environment. Add that source command to the bottom of your ~/.bashrc to set it up every time you log in.
+
+If you are not using bash please see http://www.ros.org/wiki/rosinstall/NonBashShells
