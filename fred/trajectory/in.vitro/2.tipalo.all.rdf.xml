@@ -1,0 +1,7 @@
+<rdf:RDF
+    xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+    xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#" > 
+  <rdf:Description rdf:about="http://dbpedia.org/resource/Laboratory_B_in_Sungul">
+    <rdfs:comment>Laboratory B in Sungul’ was one of the laboratories under the 9th Chief Directorate of the NKVD  that contributed to the Soviet atomic bomb project.</rdfs:comment>
+  </rdf:Description>
+</rdf:RDF>

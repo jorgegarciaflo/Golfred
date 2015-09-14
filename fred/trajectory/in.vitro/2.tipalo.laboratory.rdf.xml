@@ -1,0 +1,9 @@
+<rdf:RDF
+    xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+    xmlns:j.0="http://www.ontologydesignpatterns.org/ont/fred/domain.owl#"
+    xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#" > 
+  <rdf:Description rdf:about="http://dbpedia.org/resource/Laboratory">
+    <rdfs:comment>A laboratory  is a facility that provides controlled conditions in which scientific or technological research, experiments, and measurement may be performed.</rdfs:comment>
+    <rdf:type rdf:resource="http://www.ontologydesignpatterns.org/ont/fred/domain.owl#Facility"/>
+  </rdf:Description>
+</rdf:RDF>
