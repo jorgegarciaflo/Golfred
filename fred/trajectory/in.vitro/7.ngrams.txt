@@ -1,0 +1,20 @@
+Semantic Textual Similarity task
+Semantic Textual Similarity
+Textual Similarity Task
+Semantic Textual
+Textual Similarity
+Similarity task
+Semantic
+Textual
+Similarity
+Task
+
+Isaac Rodriguez
+
+Systems
+
+Jorge J Garcia Flores
+
+UNAM
+
+Regression for the random forest
