@@ -28,8 +28,6 @@ def recover_experiences(dirname):
     return experiences
 
 def recover_visual_memories(dirname,id_experience):
-    print(os.path.isdir(os.path.join(dirname,id_experience)))
-
     if os.path.isdir(os.path.join(dirname,id_experience)):
         memories=os.listdir(os.path.join(dirname,id_experience))
         memories=[m for m in memories if m.endswith('.jpg')]
