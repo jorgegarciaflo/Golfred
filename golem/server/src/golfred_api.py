@@ -54,7 +54,7 @@ def list_experiences():
 @api.route('/api/v0.1/list/memory/<idd>',methods=['GET'])
 @api.route('/api/list/memory/<idd>',methods=['GET'])
 def list_visual_memories(idd):
-    memories=golfred.recover_visual_memories(api.config['EXPERIENCES'],idd)
+    memories=golfred.recover_visual_memories(app.config['EXPERIENCES'],idd)
     if not memories==False:
         return json.dumps({
                 'id_experience':idd,
@@ -67,11 +67,11 @@ def list_visual_memories(idd):
 
 
 
-@api.route('/api/v0.1/create',methods=['GET'])
-@api.route('/api/create',methods=['GET'])
+@api.route('/api/v0.1/create',methods=['GET','POST'])
+@api.route('/api/create',methods=['GET','POST'])
 def new():
     idd=str(uuid.uuid4())
-    if golfred.create_new_experience(api.config['EXPERIENCES'],idd):
+    if True: #golfred.create_new_experience(app.config['EXPERIENCES'],idd):
         return json.dumps({
                     'id_experince':idd,
                     'status': 'ok'
@@ -82,18 +82,18 @@ def new():
                 })
 
 
-@api.route('/api/v0.1/push/<idd>',methods=['POST'])
+@api.route('/api/v0.1/push/<idd>',methods=['PUT','GET'])
 @api.route('/api/push/<idd>',methods=['PUT','GET'])
 def push_memory(idd):
     if request.method == 'PUT':
         data = request.data
         filename="{0}.jpg".format(len(EXPERIENCES[idd]))
         filename = secure_filename(filename)
-        filename =os.path.join(api.config['EXPERIENCES'],idd,filename)
+        filename =os.path.join(app.config['EXPERIENCES'],idd,filename)
         with open(filename, 'w') as f:
             f.write(request.data)
         text=golfred.img2text(filename)
-        EXPERIENCES[idd].apiend(filename)
+        EXPERIENCES[idd].append(filename)
         return json.dumps({
                 'status': 'ok',
                 'id_experience':idd,
