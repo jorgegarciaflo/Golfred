@@ -8,23 +8,28 @@
 # ----------------------------------------------------------------------
 from __future__ import print_function
 
-from flask import Flask, request, Blueprint, render_template
+from flask import Flask, request, Blueprint, render_template, send_from_directory
 from werkzeug import secure_filename
 from flask_wtf import Form
-from wtforms import StringField, TextAreaField, SubmitField
+from wtforms import StringField, TextAreaField, SubmitField, FileField
 from wtforms.validators import DataRequired
 import golfred
 import json
 import argparse
 import uuid
 import os
+from models import Experience
+from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy.orm.exc import NoResultFound
 
 # FORMS
 class ExperienceForm(Form):
-    name        = StringField('Name', validators=[DataRequired()])
-    description = TextAreaField('Description', validators=[DataRequired()])
-    save        = SubmitField(u"Create")
-    cancel      = SubmitField(u"Cancel")
+    name         = StringField('Name', validators=[DataRequired()])
+    description  = TextAreaField('Description', validators=[DataRequired()])
+
+
+class MemoryForm(Form):
+    file        = FileField('Image', validators=[DataRequired()])
 
 # WEB
 web = Blueprint('web',__name__)
@@ -35,14 +40,31 @@ def service_running():
 
 @web.route('/',methods=['GET'])
 def index():
-    return render_template("main_menu.html")
-
-@web.route('/create',methods=['GET','POST'])
-def create():
     form = ExperienceForm()
-    if form.cancel.data:
-        return redirect(url_for('.index'))
-    if form.validate_on_submit():
-        pass    
-        
-    return render_template('create.html', form=form)
+    return render_template("main_menu.html",form=form)
+
+
+@web.route('/memory/<uuid>',methods=['GET'])
+def add_memory(uuid):
+    form = MemoryForm()
+    if uuid and\
+       len(uuid)>0:
+            try:
+                exp=Experience.query.filter(Experience.uuid==uuid).one()
+                return render_template("memory.html",exp=exp,form=form)
+            except NoResultFound:
+                return render_template("error.html",msg="No experience found with that id: "+uuid)
+    else:
+        return render_template("error.html",msg="No experience found with id: "+uuid)
+
+
+@web.route('/memories/<uuid>/<filename>')
+def uploaded_file(uuid,filename):
+    return send_from_directory(
+        os.path.join('memories',uuid),filename)
+
+
+@web.errorhandler(404)
+def page_not_found(e):
+    return render_template('error.html',msg="Page not found"), 404
+

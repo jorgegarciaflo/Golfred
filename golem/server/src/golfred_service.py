@@ -9,18 +9,15 @@
 from __future__ import print_function
 
 from flask import Flask, request
-from werkzeug import secure_filename
+from flask_sqlalchemy import SQLAlchemy
+from flask.ext.triangle import Triangle
 import golfred
-import json
 import argparse
-import uuid
-import os
 
-app = Flask('poswebservice')
+app = Flask('golfred')
+Triangle(app)
 app.config.from_pyfile('server.cfg')
-
-# Variables declarations
-version = '0.1'
+db = SQLAlchemy(app)
 
 # Loading blueprints
 from golfred_api import api
@@ -28,7 +25,6 @@ app.register_blueprint(api)
 
 from golfred_web import web
 app.register_blueprint(web)
-
 
 
 if __name__ == '__main__':
