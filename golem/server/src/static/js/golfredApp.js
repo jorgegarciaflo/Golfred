@@ -165,8 +165,6 @@ golfredApp.controller("memoryCtrl", ['$scope', '$rootScope','$http', function($s
 	});
 
 
-	$scope.loadMemories();
-
 }]);
 
 
