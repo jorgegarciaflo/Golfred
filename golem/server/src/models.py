@@ -45,6 +45,7 @@ class Memory(db.Model):
     id = db.Column(db.Integer, primary_key=True)
 
     filename    = db.Column(db.String(550), nullable=False)
+    text        = db.Column(db.Text())
     added_at    = db.Column(db.DateTime())
     modified_at = db.Column(db.DateTime())
     expid       = db.Column(db.Integer, db.ForeignKey('experience.id'))
@@ -54,6 +55,7 @@ class Memory(db.Model):
         return {
                 'id':self.id,
                 'filename':self.filename,
+                'text':self.text.split(':'),
                 'added_at':str(self.added_at),
                 'modified_at':str(self.modified_at)
                 }

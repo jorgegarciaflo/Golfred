@@ -23,7 +23,7 @@ from models import *
 from sqlalchemy.orm.exc import NoResultFound
 
 
-visual_memory=MemoryType.query.filter(MemoryType.name=="visual").all()[0]
+visual_memory=MemoryType.query.filter(MemoryType.name=="visual").one()
 
 @api.route('/api/v0.1',methods=['GET'])
 @api.route('/api',methods=['GET'])
@@ -150,7 +150,9 @@ def add_memories(uuid):
                 os.mkdir(os.path.join('memories',uuid))
             filename=os.path.join("memories", uuid,filename)
             f.save(filename)
+            text=golfred.img2text(filename)
             mem=Memory(filename=filename,
+                text=":".join(text),
                 added_at=datetime.datetime.now(),
                 modified_at=datetime.datetime.now(),
                 typeid=visual_memory.id,
@@ -185,6 +187,26 @@ def push_memory(idd):
                 'status': 'error'
             })
     return 'ok'
+
+
+@api.route('/api/v0.1/read/<id>',methods=['GET'])
+@api.route('/api/read/<id>',methods=['GET'])
+def read_image(id):
+    try:
+        exp=Memory.query.filter(Memory.id==id).one()
+    except NoResultFound:
+        return json.dumps({
+                'status': 'error'
+            })
+    filename=mem.filename
+    text=[w.lower() for w in golfred.img2text(filename)]
+    return json.dumps({
+            'status': 'ok',
+            'id_experience':uuid,
+            'text':text,
+            'id_visual':filename
+            })
+
 
 
 @api.route('/api/v0.1/delete/memory',methods=['POST'])
