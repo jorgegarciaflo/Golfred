@@ -102,6 +102,10 @@ golfredApp.controller("memoryCtrl", ['$scope', '$rootScope','$http', function($s
 
 	$scope.memories = [];
 
+	analize=true;
+    cs=true;
+	fred=true;
+
 	var formdata = new FormData();
 	$scope.getTheFiles = function ($files) {
 		for (var i = 0; i < $files.length; i++) {
@@ -113,7 +117,8 @@ golfredApp.controller("memoryCtrl", ['$scope', '$rootScope','$http', function($s
 		$http.post('/api/add/memories/'+uuid,formdata,{
 				withCredentials: true,
 				headers: {'Content-Type': undefined },
-				transformRequest: angular.identity
+				transformRequest: angular.identity,
+				params: {'fred':fred,'analize':analize, 'cs':cs}
 			})
 			.success(function (d) {
 				$scope.loadMemories(uuid);
@@ -122,20 +127,16 @@ golfredApp.controller("memoryCtrl", ['$scope', '$rootScope','$http', function($s
 			});
 	};
 
-
 	$scope.candidateDelete = [];
 
 	$scope.deleteMemory = function(mem){		
 			$scope.candidateDelete=mem;
 	};
 
-
 	$scope.readMemory = function(mem){		
 		console.log(mem.id);
 		var res = $http.post('/api/read/'+mem.id.toString());
-	
 	};
-
 
 	$scope.deleteMemoryReal = function(uuid,mem){		
 		console.log(mem)

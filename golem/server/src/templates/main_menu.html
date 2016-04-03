@@ -1,0 +1,67 @@
+{% extends "default.html" %}
+{% block title %}{% endblock %}
+
+{% block content %}
+
+<div ng-controller="experienceCtrl" >
+<br/>
+<br/>
+<h3>Welcome to the website for <em>Machine reading for narrative generation of spatial experiences in service robots</em> project</h3>
+<br/>
+<br/>
+<p style="font-size:1.2em;">You can found more information of the project <a href="http://lipn.univ-paris13.fr/rcln/wiki/index.php/Machine_reading_for_narrative_generation_of_spatial_experiences_in_service_robots">here</a></p>
+<hr/>
+<p style="font-size:1.2em;">Recent experiences</p>
+<td style="vertical-align: top">
+	<table class="table">
+		<tr>
+			<th>Name</th>
+			<th>Description</th>
+			<th>Options</th>
+		</tr>
+		<tr ng-repeat="exp in experiences">
+			<td>{[ exp.name ]}</td>
+			<td>{[ exp.description ]}</td>
+			<td>
+				<a class='button' ><i ng-click="deleteExperience(exp)" data-open="modal_delete"class="fi-trash"></i></a>
+				<a class='button' href="memory/{[exp.uuid]}"><i class="fi-plus"></i></a>
+			</td>
+		</tr>
+	</table>
+</td>
+</div>
+
+<p style="text-align:right;"><a class='button success' data-open="modal_create"><i class="fi-plus"></i></a></p>
+<hr/>
+
+<div class="reveal" id="modal_create" data-reveal>
+	<p style="font-size:1.2em;">To create a new experience enter the following information:</p>
+	<div ng-controller="modalCreateCtrl">
+	<form ng-submit="createExperience()">
+    {{ form.csrf_token }}
+	{{form.name.label}}
+    {{ form.name(placeholder="Name for the experience",size=20,**{'ng-model':'name'}) }} 
+	{{form.description.label}}
+    {{ form.description (placeholder="Description of the experience",size=500,**{'ng-model':'description'}) }} 
+    <input type="submit" data-close aria-label="Create experience" class="button radius" value="Create"/>
+    <input type="submit" data-close aria-label="Close modal" class="button radius" value="Cancel"/>
+	</form>
+	</div>
+	<button class="close-button" data-close aria-label="Close modal" type="button">
+	<span aria-hidden="true">&times;</span>
+	</button>
+</div>
+
+<div class="reveal" id="modal_delete" data-reveal>
+	<p style="font-size:1.2em;">Are you sure do you want to erase this experience?</p>
+	<div ng-controller="modalDeleteCtrl">
+    <input type="submit" data-close aria-label="Delete experience" class="button radius" ng-click="deleteExperience()"  value="Yes"/>
+    <input type="submit" data-close aria-label="Close modal" class="button radius" value="No"/>
+	</form>
+	</div>
+	<button class="close-button" data-close aria-label="Close modal" type="button">
+	<span aria-hidden="true">&times;</span>
+	</button>
+</div>
+
+{%endblock%}

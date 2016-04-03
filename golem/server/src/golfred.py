@@ -10,6 +10,23 @@ from __future__ import print_function
 
 import os
 from subprocess import Popen, PIPE, STDOUT
+import httplib, urllib, base64
+import keys
+import json
+
+
+headers = {
+    # Request headers
+    'Content-Type': 'application/octet-stream',
+    'Ocp-Apim-Subscription-Key': keys.KEY_CONGITIVE_SERVICES,
+}
+
+params = urllib.urlencode({
+    # Request parameters
+    'language': 'unk',
+    'detectOrientation ': 'true',
+})
+
 CMD=['./example_text_end_to_end_recognition']
 
 def create_new_experience(dirname,id_experience):
@@ -43,4 +60,15 @@ def img2text(imgfile):
     p = Popen(cmd,  stdout=PIPE, stderr=PIPE)
     stdout, stderr = p.communicate()
     return stdout.splitlines()
+
+def cs_img2text(imgfile):
+        data = open(os.path.join('src',imgfile[1:]), 'rb').read()
+        conn = httplib.HTTPSConnection('api.projectoxford.ai')
+        conn.request("POST", "/vision/v1.0/ocr?%s" % params, data, headers)
+        response = conn.getresponse()
+        text = json.loads(response.read())
+        regions = [[" ".join([w['text'] for w in l['words']])   for  l in   r['lines']] for r in  text['regions']]
+        conn.close()
+        return regions
+
 

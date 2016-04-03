@@ -25,8 +25,7 @@ if __name__ == '__main__':
     mt=MemoryType(name="visual")
     db.session.add(mt)
     db.session.commit()
+    pt=PerceptionType(name="read")
+    db.session.add(pt)
+    db.session.commit()
     
-
-
-
-

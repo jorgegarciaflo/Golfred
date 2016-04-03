@@ -8,7 +8,7 @@
 # ----------------------------------------------------------------------
 from __future__ import print_function
 
-from flask import Flask, request, Blueprint, send_from_directory
+from flask import Flask, request, Blueprint, send_from_directory,url_for
 from werkzeug import secure_filename
 import golfred
 import json
@@ -23,7 +23,6 @@ from models import *
 from sqlalchemy.orm.exc import NoResultFound
 
 
-visual_memory=MemoryType.query.filter(MemoryType.name=="visual").one()
 
 @api.route('/api/v0.1',methods=['GET'])
 @api.route('/api',methods=['GET'])
@@ -61,8 +60,8 @@ def list_experiences():
 @api.route('/api/latest/experiences',methods=['GET'])
 @api.route('/api/v0.1/latest/experiences/<n>',methods=['GET'])
 @api.route('/api/latest/experiences/<n>',methods=['GET'])
-def latest_experiences(n):
-    exps=Experience.query.order_by(Experience.id.desc()).limit(n)
+def latest_experiences(n=10):
+    exps=Experience.query.order_by(Experience.id.desc()).all()
     exps = [l.as_dict() for l in exps]
     return json.dumps(exps)
 
@@ -74,10 +73,12 @@ def list_visual_memories(uuid):
         exp=Experience.query.filter(Experience.uuid==uuid).one()
     except NoResultFound:
         return json.dumps({
-                    'status': 'error'
+                    'status': 'error',
+                    'message': 'Not experience found'
+
                 })
     try:
-        memories=Memory.query.filter(Memory.expid==exp.id).all()
+        memories=Memory.query.filter(Memory.experience_id==exp.id).all()
         res=[m.as_dict() for m in memories]
         return json.dumps(res)
     except NoResultFound:
@@ -136,6 +137,8 @@ def allowed_file(filename):
 @api.route('/api/v0.1/add/memories/<uuid>',methods=['POST'])
 @api.route('/api/add/memories/<uuid>',methods=['POST'])
 def add_memories(uuid):
+    visual_memory=MemoryType.query.filter(MemoryType.name=="visual").one()
+    read_perception=PerceptionType.query.filter(PerceptionType.name=="read").one()
     try:
         exp=Experience.query.filter(Experience.uuid==uuid).one()
     except NoResultFound:
@@ -145,19 +148,36 @@ def add_memories(uuid):
     files = request.files.getlist('files')
     for f in files:
         if f and allowed_file(f.filename):
-            filename = secure_filename(f.filename)
+            filename_ = secure_filename(f.filename)
             if not os.path.isdir(os.path.join('memories',uuid)):
                 os.mkdir(os.path.join('memories',uuid))
-            filename=os.path.join("memories", uuid,filename)
+            filename=os.path.join("memories", uuid,filename_)
             f.save(filename)
-            text=golfred.img2text(filename)
+
+            if request.args.get('cs', ''):
+                urlfile=url_for('web.uploaded_file',uuid=exp.uuid,filename=filename_)
+                regions=golfred.cs_img2text(filename_)
+                pet = Perception(
+                    representation="\n\n".join(["\n".join(lines) for lines in regions]),
+                    type = read_perception
+                    )
+            if request.args.get('cs', ''):
+                urlfile=url_for('web.uploaded_file',uuid=exp.uuid,filename=filename_)
+                ana=golfred.cs_img2analize(filename_)
+                print(ana)
+                #pet = Perception(
+                #    representation="\n\n".join(["\n".join(lines) for lines in regions]),
+                #    type = read_perception
+                #    )
+         
             mem=Memory(filename=filename,
-                text=":".join(text),
                 added_at=datetime.datetime.now(),
                 modified_at=datetime.datetime.now(),
-                typeid=visual_memory.id,
-                expid=exp.id
+                type=visual_memory,
+                experience_id=exp.id,
+                perceptions=[pet]
             )
+
             db.session.add(mem)
     db.session.commit()
     return json.dumps({

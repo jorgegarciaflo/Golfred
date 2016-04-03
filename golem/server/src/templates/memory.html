@@ -1,0 +1,65 @@
+{% extends "default.html" %}
+{% block title %}Memories{% endblock %}
+
+{% block content %}
+
+<br/>
+<br/>
+<h3>Experience <em>{{exp.name}}</em></h3>
+
+<div ng-controller="memoryCtrl" ng-init="loadMemories('{{exp.uuid}}')" >
+<p style="font-size:1.2em;">Select the memory to add</p>
+<div ng-view>
+<form>
+<fieldset class="large-6 columns">
+    <legend>Preprocess options</legend>
+    <input name="fred"    id="cbfred"    type="checkbox" ng-model="fred"   ><label for="fred">Fred</label>
+    <input name="cs"      id="cbcs"      type="checkbox" ng-model="cs"     ><label for="cs">OCR</label>
+    <input name="analize" id="cbanalize" type="checkbox" ng-model="analize"><label for="cs">Analize</label>
+</fieldset>
+<input type="file"   id="file" name="file[]" multiple ng-files="getTheFiles($files)" />
+<input type="submit" ng-click="uploadFiles('{{exp.uuid}}')" data-close aria-label="Create experience" class="button radius" value="Add"/>
+</form>
+</div>
+
+<table>
+	<tr>
+		<th>Memories</th>
+		<th>Perceptions</th>
+		<th>Options</th>
+	</tr>
+	<tr ng-repeat="memory in memories">
+		<td align="center"><img width="480" src='/{[memory.filename ]}'/></td>
+
+		<td>
+		<div class="tabs-content" data-tabs-content="example-tabs"  ng-repeat="perception in memory.perceptions" >
+  		<div class="tabs-panel is-active" id="{[perception.type]}">
+			<p>{[perception.repr]}</p>
+  		</div>
+		</div>
+		</td>
+		<td>
+			<a class='button' ng-click=""  ><i class="fi-loop"></i>Fred</a>
+			<a class='button' ng-click="deleteMemory(memory)"  ><i data-open="modal_delete"class="fi-trash"></i></a>
+		</td>
+	</tr>
+</table>
+</div>
+
+
+<div class="reveal" id="modal_delete" data-reveal>
+	<p style="font-size:1.2em;">Are you sure do you want to erase this memory?</p>
+	<div ng-controller="modalDeleteCtrl">
+    <input type="submit" data-close aria-label="Delete experience" class="button radius" ng-click="deleteMemory('{{exp.uuid}}')"  value="Yes"/>
+    <input type="submit" data-close aria-label="Close modal" class="button radius" value="No"/>
+	</form>
+	</div>
+	<button class="close-button" data-close aria-label="Close modal" type="button">
+	<span aria-hidden="true">&times;</span>
+	</button>
+</div>
+
+
+
+
+{%endblock%}

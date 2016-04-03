@@ -4,7 +4,7 @@
 # Models for experiences
 # ----------------------------------------------------------------------
 # Ivan Vladimir Meza-Ruiz/ ivanvladimir at turing.iimas.unam.mx
-# 20156/iimas/unam
+# 2016/iimas/unam
 # ----------------------------------------------------------------------
 
 from golfred_service import db
@@ -25,13 +25,24 @@ class Experience(db.Model):
                 'uuid':self.uuid,
                 'description':self.description,
                 'created_at':str(self.created_at),
-                'modified_at':str(self.modified_at)
+                'modified_at':str(self.modified_at),
                 }
 
 class MemoryType(db.Model):
     __tablename__ = 'memory_type'
     id          = db.Column(db.Integer, primary_key=True)
-    name        = db.Column(db.String(10), nullable=False)
+    name        = db.Column(db.String(50), nullable=False)
+
+    def as_dict(self):
+        return {
+                'id':self.id,
+                'name':self.name,
+                }
+
+class PerceptionType(db.Model):
+    __tablename__ = 'perception_type'
+    id          = db.Column(db.Integer, primary_key=True)
+    name        = db.Column(db.String(50), nullable=False)
 
     def as_dict(self):
         return {
@@ -45,18 +56,40 @@ class Memory(db.Model):
     id = db.Column(db.Integer, primary_key=True)
 
     filename    = db.Column(db.String(550), nullable=False)
-    text        = db.Column(db.Text())
     added_at    = db.Column(db.DateTime())
     modified_at = db.Column(db.DateTime())
-    expid       = db.Column(db.Integer, db.ForeignKey('experience.id'))
+    # Relationships
     typeid      = db.Column(db.Integer, db.ForeignKey('memory_type.id'))
+    type        = db.relationship("MemoryType")
+    experience_id   = db.Column(db.Integer, db.ForeignKey('experience.id'))
+    perceptions = db.relationship("Perception")
 
     def as_dict(self):
         return {
                 'id':self.id,
                 'filename':self.filename,
-                'text':self.text.split(':'),
                 'added_at':str(self.added_at),
-                'modified_at':str(self.modified_at)
+                'modified_at':str(self.modified_at),
+                'type': self.type.name,
+                'perceptions': [p.as_dict() for p in self.perceptions]
+                }
+    
+
+class Perception(db.Model):
+    __tablename__ = 'perception'
+    id = db.Column(db.Integer, primary_key=True)
+    representation  = db.Column(db.Text())
+    typeid          = db.Column(db.Integer, db.ForeignKey('perception_type.id'))
+    type            = db.relationship("PerceptionType")
+    memory_id       = db.Column(db.Integer, db.ForeignKey('memory.id'))
+    def as_dict(self):
+        return {
+                'id':self.id,
+                'repr':self.representation,
+                'type': self.type.name
                 }
 
+
+
+
+    

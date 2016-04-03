@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+
+<!--[if IE 9]><html class="lt-ie10" lang="en" > <![endif]-->
+<html class="no-js" lang="en" ng-app="golfredApp">
+<head>
+    <meta charset="utf-8"/>
+    <meta name="description" content="Homepage for Golfred project"/>
+    <meta name="generator" content="Flask"/>
+    <meta name="robots"    content="all" />
+    <meta name="keywords"  content="Golfred, Golem, Fred, IIMAS, UNAM, LIPN, LORIA, CNRS"/>
+    <meta name="copyright" content='2016 Ivan Vladimir Meza Ruiz'/>
+    <meta name="author"    content="Ivan Vladimir Meza Ruiz"/>
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}{% endblock %} - Golfred</title>
+	<link rel="stylesheet" href="{{url_for('static', filename='css/foundation.min.css')}}"/>
+	<link rel="stylesheet" href="{{url_for('static', filename='css/golfred.css')}}"/>
+	<script src="{{url_for('static', filename='js/angular.min.js')}}"></script>
+	<script src="{{url_for('static', filename='js/golfredApp.js')}}"></script>
+	<link href="http://cdnjs.cloudflare.com/ajax/libs/foundicons/3.0.0/foundation-icons.css" rel="stylesheet">
+</head>
+
+<body >
+
+	<div class="title-bar" data-responsive-toggle="main-menu" data-hide-for="medium">
+	<button class="menu-icon" type="button" data-toggle></button>
+	<div class="title-bar-title">Menu</div>
+	</div>
+
+	<div class="top-bar" id="main-menu">
+  	<div class="top-bar-left">
+    <ul class="dropdown menu" data-dropdown-menu>
+      <li class="menu-text">Golfred</li>
+    </ul>
+  	</div>
+		<div class="top-bar-right">
+		<ul class="menu" data-responsive-menu="drilldown medium-dropdown">
+		  <li class="has-submenu">
+			<a href="#">One</a>
+			<ul class="submenu menu vertical" data-submenu>
+			  <li><a href="#">One</a></li>
+			  <li><a href="#">Two</a></li>
+			  <li><a href="#">Three</a></li>
+			</ul>
+		  </li>
+		  <li><a href="#">Two</a></li>
+		  <li><a href="#">Three</a></li>
+		</ul>
+  	</div>
+	</div>
+
+<div class="row">
+<div class="large-12 columns">
+        {% block content %}{% endblock %}
+</div>
+</div>
+
+
+
+
+
+
+<footer class="footer">
+  <div class="row">
+    <div class="small-12 medium-6 medium-push-6 columns">
+      <p class="logo show-for-small-only"><i class="fi-target"></i>Golfred</p> 
+    </div>
+
+    <div class="small-12 medium-6 medium-pull-6 columns">
+      <p class="logo hide-for-small-only"><i class="fi-target"></i>Golfred</p> 
+      <p class="footer-links">
+        <a href="http://golem.iimas.unam.mx">Golem</a>
+        <a href="http://www.iimas.unam.mx">IIMAS</a>
+        <a href="http://www.unam.mx">UNAM</a>
+        <a href="">LIPN</a>
+        <a href="">Paris 13</a>
+        <a href="">LORIA</a>
+        <a href="">CNRS</a>
+      </p>
+      <ul class="inline-list social">
+        <a href="#"><i class="fi-social-github"></i></a>
+      </ul>
+      <p class="copywrite">IIMAS/LIPN/LORIA © 2016</p>
+    </div>
+  </div>
+</footer>
+
+
+</body>
+
+<script src="{{url_for('static', filename='js/vendor/jquery.min.js')}}"></script>
+<script src="{{url_for('static', filename='js/vendor/what-input.min.js')}}"></script>
+<script src="{{url_for('static', filename='js/foundation.min.js')}}"></script>
+<script src="{{url_for('static', filename='js/mm-foundation.min.js')}}"></script>
+    <script>
+      $(document).foundation();
+    </script>
+</html>
