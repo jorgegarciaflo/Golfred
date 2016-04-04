@@ -8,30 +8,12 @@
 # ----------------------------------------------------------------------
 from __future__ import print_function
 
-from flask import Flask, request
-from flask_sqlalchemy import SQLAlchemy
-from flask.ext.triangle import Triangle
-import golfred
+from golfred import app
 import argparse
-
-app = Flask('golfred')
-Triangle(app)
-app.config.from_pyfile('server.cfg')
-db = SQLAlchemy(app)
-
-# Loading blueprints
-from golfred_api import api
-app.register_blueprint(api)
-
-from golfred_web import web
-app.register_blueprint(web)
 
 
 if __name__ == '__main__':
     p = argparse.ArgumentParser("Golfred service")
-    p.add_argument("--dir","-dir",
-            action="store",dest="dir",
-            help="Directory to store experiences")
     p.add_argument("--host",default="127.0.0.1",
             action="store", dest="host",
             help="Root url [127.0.0.1]")
@@ -45,10 +27,6 @@ if __name__ == '__main__':
             action="store_true", dest="verbose",
             help="Verbose mode [Off]")
     opts = p.parse_args()
-
-    if opts.dir:
-        app.config['EXPERIENCES'] = opts.DIR
-    EXPERIENCES=golfred.recover_experiences(app.config['EXPERIENCES'])
 
     app.run(debug=opts.debug,
             host=opts.host,

@@ -1,0 +1,83 @@
+{% extends "default.html" %}
+{% block title %}Memories{% endblock %}
+
+{% block content %}
+
+<br/>
+<br/>
+<h3>Experience <em>{{exp.name}}</em></h3>
+
+<div ng-controller="memoryCtrl" ng-init="loadMemories('{{exp.uuid}}')" >
+<div class="callout">
+<div class="row">
+<div class="large-12 columns">
+<p style="font-size:1.2em;">To add memories choose them</p>
+<form>
+<div class="row">
+<div class="large-3 columns">
+<button class="button success file-upload">
+<input type="file"   id="file" name="file[]" multiple ng-files="getTheFiles($files)" class="file-input">Choose files
+</input>
+</button>
+</div>
+
+<fieldset class="large-8 columns">
+    <legend>Preprocess options</legend>
+    <input name="fred"    id="cbfred"    type="checkbox" ng-model="fred"    checked><label for="fred">Fred</label>
+    <input name="cs"      id="cbcs"      type="checkbox" ng-model="cs"      checked><label for="cs">OCR</label>
+    <input name="analize" id="cbanalize" type="checkbox" ng-model="analize" checked><label for="analize">Analize</label>
+</fieldset>
+</div>
+
+<div class="row">
+<div class="large-3 columns">
+<input type="submit" ng-click="uploadFiles('{{exp.uuid}}')" data-close aria-label="Create experience" class="button radius" value="Add"/>
+</div>
+</div>
+</form>
+</div>
+</div>
+</div>
+
+<table>
+	<tr>
+		<th width="20%">Memories</th>
+		<th width="50%">Perceptions</th>
+		<th width="30%">Options</th>
+	</tr>
+	<tr ng-repeat="memory in memories">
+		<td align="center"><img src='/{[memory.filename ]}'/></td>
+
+		<td>
+		<div class="small button-group">
+		<div  ng-repeat="perception in memory.perceptions">
+		<a ng-click="changePerception(memory.id,perception.id)" class="button">{[perception.type]}</a>
+		</div>
+		</div>
+		<p>{[ perceptions[memory.id] ]}</p>
+		</td>
+		<td>
+			<a class='button' ng-click=""  ><i class="fi-loop"> </i>Fred</a>
+			<a class='button' ng-click="deleteMemory(memory)"  ><i data-open="modal_delete" class="fi-trash"></i></a>
+		</td>
+	</div>
+</table>
+</div>
+
+
+<div class="reveal" id="modal_delete" data-reveal>
+	<p style="font-size:1.2em;">Are you sure do you want to erase this memory?</p>
+	<div ng-controller="modalDeleteCtrl">
+    <input type="submit" data-close aria-label="Delete experience" class="button radius" ng-click="deleteMemory('{{exp.uuid}}')"  value="Yes"/>
+    <input type="submit" data-close aria-label="Close modal" class="button radius" value="No"/>
+	</form>
+	</div>
+	<button class="close-button" data-close aria-label="Close modal" type="button">
+	<span aria-hidden="true">&times;</span>
+	</button>
+</div>
+
+
+
+
+{%endblock%}

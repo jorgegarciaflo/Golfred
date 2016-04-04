@@ -24,8 +24,11 @@ if __name__ == '__main__':
     db.session.commit()
     mt=MemoryType(name="visual")
     db.session.add(mt)
-    db.session.commit()
     pt=PerceptionType(name="read")
+    db.session.add(pt)
+    pt=PerceptionType(name="analysis")
+    db.session.add(pt)
+    pt=PerceptionType(name="fred")
     db.session.add(pt)
     db.session.commit()
     

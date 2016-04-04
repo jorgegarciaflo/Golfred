@@ -8,11 +8,10 @@
 # ----------------------------------------------------------------------
 from __future__ import print_function
 
-from flask import Flask, request, Blueprint, send_from_directory,url_for
+from flask import request, Blueprint
 from werkzeug import secure_filename
 import golfred
 import json
-import argparse
 import uuid
 import os
 import datetime
@@ -139,6 +138,7 @@ def allowed_file(filename):
 def add_memories(uuid):
     visual_memory=MemoryType.query.filter(MemoryType.name=="visual").one()
     read_perception=PerceptionType.query.filter(PerceptionType.name=="read").one()
+    analisys_perception=PerceptionType.query.filter(PerceptionType.name=="analysis").one()
     try:
         exp=Experience.query.filter(Experience.uuid==uuid).one()
     except NoResultFound:
@@ -147,6 +147,7 @@ def add_memories(uuid):
             })
     files = request.files.getlist('files')
     for f in files:
+        perceptions=[]
         if f and allowed_file(f.filename):
             filename_ = secure_filename(f.filename)
             if not os.path.isdir(os.path.join('memories',uuid)):
@@ -155,27 +156,37 @@ def add_memories(uuid):
             f.save(filename)
 
             if request.args.get('cs', ''):
-                urlfile=url_for('web.uploaded_file',uuid=exp.uuid,filename=filename_)
-                regions=golfred.cs_img2text(filename_)
-                pet = Perception(
+                regions=golfred.cs_img2text(filename)
+                pt = Perception(
                     representation="\n\n".join(["\n".join(lines) for lines in regions]),
                     type = read_perception
                     )
-            if request.args.get('cs', ''):
-                urlfile=url_for('web.uploaded_file',uuid=exp.uuid,filename=filename_)
-                ana=golfred.cs_img2analize(filename_)
-                print(ana)
-                #pet = Perception(
-                #    representation="\n\n".join(["\n".join(lines) for lines in regions]),
-                #    type = read_perception
-                #    )
+                perceptions.append(pt)
+            if request.args.get('analize', ''):
+                ana=golfred.cs_img2analize(filename)
+                pt = Perception(
+                    representation=json.dumps(ana),
+                    type = analisys_perception
+                    )
+                perceptions.append(pt)
+
+            if request.args.get('fred', '') and len(regions)>0:
+                for region in regions:
+                    for line in regions:
+                        ana=golfred.fred(line)
+                pt = Perception(
+                    representation=json.dumps(ana),
+                    type = analisys_perception
+                    )
+                perceptions.append(pt)
+ 
          
             mem=Memory(filename=filename,
                 added_at=datetime.datetime.now(),
                 modified_at=datetime.datetime.now(),
                 type=visual_memory,
                 experience_id=exp.id,
-                perceptions=[pet]
+                perceptions=perceptions
             )
 
             db.session.add(mem)
@@ -189,8 +200,6 @@ def add_memories(uuid):
 @api.route('/api/push/<idd>',methods=['PUT','GET'])
 def push_memory(idd):
     if request.method == 'PUT':
-        data = request.data
-        filename="{0}.jpg".format(len(EXPERIENCES[idd]))
         filename = secure_filename(filename)
         filename =os.path.join(app.config['EXPERIENCES'],idd,filename)
         with open(filename, 'w') as f:
@@ -207,25 +216,6 @@ def push_memory(idd):
                 'status': 'error'
             })
     return 'ok'
-
-
-@api.route('/api/v0.1/read/<id>',methods=['GET'])
-@api.route('/api/read/<id>',methods=['GET'])
-def read_image(id):
-    try:
-        exp=Memory.query.filter(Memory.id==id).one()
-    except NoResultFound:
-        return json.dumps({
-                'status': 'error'
-            })
-    filename=mem.filename
-    text=[w.lower() for w in golfred.img2text(filename)]
-    return json.dumps({
-            'status': 'ok',
-            'id_experience':uuid,
-            'text':text,
-            'id_visual':filename
-            })
 
 
 

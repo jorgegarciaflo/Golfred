@@ -8,7 +8,6 @@ golfredApp.config(['$interpolateProvider', function($interpolateProvider) {
 	  $interpolateProvider.startSymbol('{[');
 		    $interpolateProvider.endSymbol(']}');
 }]);
-	
 
 golfredApp.controller("experienceCtrl", ['$scope', '$rootScope', '$http', function($scope, $rootScope,$http) {
 
@@ -101,10 +100,11 @@ golfredApp.directive('ngFiles', ['$parse', function ($parse) {
 golfredApp.controller("memoryCtrl", ['$scope', '$rootScope','$http', function($scope,$rootScope,$http) {
 
 	$scope.memories = [];
+	$scope.perceptions={};
 
-	analize=true;
-    cs=true;
-	fred=true;
+	$scope.analize=true;
+    $scope.cs=true;
+	$scope.fred=true;
 
 	var formdata = new FormData();
 	$scope.getTheFiles = function ($files) {
@@ -139,7 +139,6 @@ golfredApp.controller("memoryCtrl", ['$scope', '$rootScope','$http', function($s
 	};
 
 	$scope.deleteMemoryReal = function(uuid,mem){		
-		console.log(mem)
 		var res = $http.post('/api/delete/memory',{"id":mem.id});
 		res.success(function(data, status, headers, config) {
 			$scope.loadMemories(uuid);
@@ -150,11 +149,33 @@ golfredApp.controller("memoryCtrl", ['$scope', '$rootScope','$http', function($s
 		});		
 	};
 
+
+	$scope.changePerception = function(memoryid,perceptionid){
+		for(memory in $scope.memories){
+			memory=$scope.memories[memory];
+			if(memory.id == memoryid){
+				for (perception in memory.perceptions){
+					perception=memory.perceptions[perception];
+					if(perceptionid == perception.id){
+						$scope.perceptions[memoryid]=perception.repr;
+					}
+				}			
+		
+			}
+		}
+	}		
+
 	$scope.loadMemories = function(uuid){		
 		$http.get('/api/list/memories/'+uuid).
 			success(function(data, status, headers, config){
 			$scope.memories = data;
-		})
+			for(memory in $scope.memories){
+				memory=$scope.memories[memory];
+				if(!$scope.perceptions[memory.id]){
+					$scope.perceptions[memory.id]=memory.perceptions[0].repr;
+				}
+			}
+			})
 		.error(function(error, status, headers, config) {
 			alert( "failure message ");
 		});		

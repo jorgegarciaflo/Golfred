@@ -13,7 +13,7 @@ from subprocess import Popen, PIPE, STDOUT
 import httplib, urllib, base64
 import keys
 import json
-
+import fredlib
 
 headers = {
     # Request headers
@@ -21,11 +21,18 @@ headers = {
     'Ocp-Apim-Subscription-Key': keys.KEY_CONGITIVE_SERVICES,
 }
 
-params = urllib.urlencode({
+params_ocr = urllib.urlencode({
+    # Request parameters
+    'visualFeatures': 'Categories'
+})
+
+params_analize = urllib.urlencode({
     # Request parameters
     'language': 'unk',
     'detectOrientation ': 'true',
 })
+
+
 
 CMD=['./example_text_end_to_end_recognition']
 
@@ -62,13 +69,36 @@ def img2text(imgfile):
     return stdout.splitlines()
 
 def cs_img2text(imgfile):
-        data = open(os.path.join('src',imgfile[1:]), 'rb').read()
-        conn = httplib.HTTPSConnection('api.projectoxford.ai')
-        conn.request("POST", "/vision/v1.0/ocr?%s" % params, data, headers)
-        response = conn.getresponse()
-        text = json.loads(response.read())
-        regions = [[" ".join([w['text'] for w in l['words']])   for  l in   r['lines']] for r in  text['regions']]
-        conn.close()
-        return regions
+        data = open(imgfile, 'rb').read()
+        try:
+            conn = httplib.HTTPSConnection('api.projectoxford.ai')
+            conn.request("POST", "/vision/v1.0/ocr?%s" % params_ocr, data, headers)
+            response = conn.getresponse()
+            text = json.loads(response.read())
+            regions = [[" ".join([w['text'] for w in l['words']])   for  l in   r['lines']] for r in  text['regions']]
+            conn.close()
+            return regions
+        except Exception as e:
+            print("[Errno {0}] {1}".format(e.errno, e.strerror))
+            return  []
+
+def cs_img2analize(imgfile):
+        try:
+            data = open(imgfile, 'rb').read()
+            conn = httplib.HTTPSConnection('api.projectoxford.ai')
+            conn.request("POST", "/vision/v1.0/analyze?%s" % params_analize, data, headers)
+            response = conn.getresponse()
+            ana = json.loads(response.read())
+            conn.close()
+            return ana
+        except Exception as e:
+            print("[Errno {0}] {1}".format(e.errno, e.strerror))
+            return  ""
+
+
+def text2fred(line):
+    g=fredlib.getFredGraph(fredlib.preprocessText(line))
+
+    return ""
 
 
