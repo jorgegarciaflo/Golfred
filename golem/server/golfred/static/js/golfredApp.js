@@ -84,6 +84,19 @@ golfredApp.controller("modalDeleteCtrl", ['$scope','$http', function($scope, $ht
 	};
 }]);
 
+
+golfredApp.controller("modalGolemCtrl", ['$scope','$http', function($scope, $http) {
+	$scope.position="None";
+	$scope.processGolem = function(){		
+		$scope.$emit('process_golem',{'position':$scope.position});
+	};
+
+	$scope.$on('position', function(event, args) {
+			$scope.position=args.position;
+	});
+}]);
+
+
 golfredApp.directive('ngFiles', ['$parse', function ($parse) {
 	function fn_link(scope, element, attrs) {
 		var onChange = $parse(attrs.ngFiles);
@@ -105,6 +118,7 @@ golfredApp.controller("memoryCtrl", ['$scope', '$rootScope','$http', function($s
 	$scope.analize=true;
     $scope.cs=true;
 	$scope.fred=true;
+	$scope.position="none";
 
 	var formdata = new FormData();
 	$scope.getTheFiles = function ($files) {
@@ -118,7 +132,7 @@ golfredApp.controller("memoryCtrl", ['$scope', '$rootScope','$http', function($s
 				withCredentials: true,
 				headers: {'Content-Type': undefined },
 				transformRequest: angular.identity,
-				params: {'fred':fred,'analize':analize, 'cs':cs}
+				params: {'fred':$scope.fred,'analize':$scope.analize, 'cs':$scope.cs}
 			})
 			.success(function (d) {
 				$scope.loadMemories(uuid);
@@ -128,9 +142,22 @@ golfredApp.controller("memoryCtrl", ['$scope', '$rootScope','$http', function($s
 	};
 
 	$scope.candidateDelete = [];
+	$scope.candidateGolem = [];
 
 	$scope.deleteMemory = function(mem){		
 			$scope.candidateDelete=mem;
+	};
+
+	$scope.processGolem = function(mem){		
+			$scope.candidateGolem=mem;
+			$scope.$emit('position',{'pos':mem.position});
+	};
+
+	$scope.processFred = function(mem){		
+			$scope.candidateDelete=mem;
+			var res = $http.post('/api/update/memory/',{"mem":mem.id.toString(),
+														 "type":"fred"});
+			$scope.loadMemories(uuid);
 	};
 
 	$scope.readMemory = function(mem){		
@@ -148,6 +175,24 @@ golfredApp.controller("memoryCtrl", ['$scope', '$rootScope','$http', function($s
 			alert( "failure message: " + JSON.stringify({data: data}));
 		});		
 	};
+
+
+	$scope.processGolemReal = function(position,mem){
+		var data = 	{"mem":mem.id,
+												   "type":"golem",
+													"position":position
+													};
+		console.log(data);
+		var res = $http.post('/api/update/memory',data);
+		res.success(function(data, status, headers, config) {
+			$scope.loadMemories(uuid);
+		});
+
+		res.error(function(data, status, headers, config) {
+			alert( "failure message: " + JSON.stringify({data: data}));
+		});		
+	};
+
 
 
 	$scope.changePerception = function(memoryid,perceptionid){
@@ -182,9 +227,16 @@ golfredApp.controller("memoryCtrl", ['$scope', '$rootScope','$http', function($s
 	};
 
 	$rootScope.$on('delete_memory', function(event, args) {
-			uuid=args['uuid']
+			uuid=args['uuid'];
 			$scope.deleteMemoryReal(uuid,$scope.candidateDelete);
 	});
+
+	$rootScope.$on('process_golem', function(event, args) {
+			position=args['position'];
+			$scope.processGolemReal(position,$scope.candidateGolem);
+	});
+
+
 
 
 }]);

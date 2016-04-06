@@ -9,8 +9,8 @@
 
 import sys
 import argparse
-from golfred_service import db
-from models import *
+from golfred import db
+from golfred.models import *
 
 
 if __name__ == '__main__':
@@ -19,7 +19,6 @@ if __name__ == '__main__':
             action="store_true", dest="force",
             help="Creates new database [admin]")
  
-    from models import *
     db.create_all()
     db.session.commit()
     mt=MemoryType(name="visual")
@@ -29,6 +28,8 @@ if __name__ == '__main__':
     pt=PerceptionType(name="analysis")
     db.session.add(pt)
     pt=PerceptionType(name="fred")
+    db.session.add(pt)
+    pt=PerceptionType(name="golem")
     db.session.add(pt)
     db.session.commit()
     

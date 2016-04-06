@@ -139,6 +139,7 @@ def add_memories(uuid):
     visual_memory=MemoryType.query.filter(MemoryType.name=="visual").one()
     read_perception=PerceptionType.query.filter(PerceptionType.name=="read").one()
     analisys_perception=PerceptionType.query.filter(PerceptionType.name=="analysis").one()
+    fred_perception=PerceptionType.query.filter(PerceptionType.name=="fred").one()
     try:
         exp=Experience.query.filter(Experience.uuid==uuid).one()
     except NoResultFound:
@@ -157,8 +158,9 @@ def add_memories(uuid):
 
             if request.args.get('cs', ''):
                 regions=golfred.cs_img2text(filename)
+                lines="\n\n".join(["\n".join(lines) for lines in regions])
                 pt = Perception(
-                    representation="\n\n".join(["\n".join(lines) for lines in regions]),
+                    representation=lines,
                     type = read_perception
                     )
                 perceptions.append(pt)
@@ -171,12 +173,15 @@ def add_memories(uuid):
                 perceptions.append(pt)
 
             if request.args.get('fred', '') and len(regions)>0:
-                for region in regions:
-                    for line in regions:
-                        ana=golfred.fred(line)
+                filename_pref=filename.rsplit('.',1)
+                if len(lines[0].strip())>0:
+                    filename_fred=filename_pref[0]+".fred"
+                    ana=golfred.text2fred(lines[0],filename_fred)
+                else:
+                    ana=""
                 pt = Perception(
                     representation=json.dumps(ana),
-                    type = analisys_perception
+                    type = fred_perception
                     )
                 perceptions.append(pt)
  
@@ -194,6 +199,71 @@ def add_memories(uuid):
     return json.dumps({
             'status': 'ok'
             })
+
+
+@api.route('/api/v0.1/update/memory',methods=['POST'])
+@api.route('/api/update/memory',methods=['POST'])
+def update_memory():
+    content = request.json
+    print(content)
+    id=content['mem']
+    if content['type']=="fred":
+        try:
+            memory=Memory.query.filter(Memory.id==id).one()
+            for p in memory.perceptions:
+                if p.type.name=="fred":
+                    p_fred=p
+                if p.type.name=="read":
+                    lines=p.representation.split('\n')
+            filename_pref=memory.filename.rsplit('.',1)
+            ana={'line':"",'fred':""}
+            if len(lines[0].strip())>0:
+                filename_fred=filename_pref[0]+".fred"
+                fred_output=golfred.text2fred(lines[0],filename_fred)
+                ana['line']=lines[0]
+                ana['filename']=filename_fred
+                ana['output']=fred_output
+
+            p_fred.representation=json.dumps(ana)
+            db.session.add(p_fred)
+            db.session.commit()
+            return json.dumps({
+                'status': 'ok'
+                })
+        except NoResultFound:
+            return json.dumps({
+                        'status': 'error'
+                    })
+    elif content['type']=="golem":
+        try:
+            memory=Memory.query.filter(Memory.id==id).one()
+            p_golem=None
+            for p in memory.perceptions:
+                if p.type.name=="golem":
+                    p_golem=p
+                    break
+            if p_golem:
+                p_golem.representation=json.dumps({"positon":content['position']})
+                db.session.add(p_golem)
+            else:
+                golem_perception=PerceptionType.query.filter(PerceptionType.name=="golem").one()
+                p_golem = Perception(
+                    representation=json.dumps({"positon":content['position']}),
+                    type = golem_perception
+                    )
+                memory.perceptions.append(p_golem)
+                db.session.add(memory)
+  
+            db.session.commit()
+            return json.dumps({
+                'status': 'ok'
+                })
+        except NoResultFound:
+            return json.dumps({
+                        'status': 'error'
+                    })
+        
+
 
 
 @api.route('/api/v0.1/push/<idd>',methods=['PUT','GET'])

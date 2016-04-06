@@ -77,6 +77,7 @@ def cs_img2text(imgfile):
             text = json.loads(response.read())
             regions = [[" ".join([w['text'] for w in l['words']])   for  l in   r['lines']] for r in  text['regions']]
             conn.close()
+            print(regions)
             return regions
         except Exception as e:
             print("[Errno {0}] {1}".format(e.errno, e.strerror))
@@ -96,9 +97,13 @@ def cs_img2analize(imgfile):
             return  ""
 
 
-def text2fred(line):
-    g=fredlib.getFredGraph(fredlib.preprocessText(line))
-
-    return ""
-
+def text2fred(line,outputfile):
+    try:
+        print(outputfile)
+        g=fredlib.getFredGraph(fredlib.preprocessText(line),outputfile)
+        print(line)
+        return  "hola"
+    except Exception as e:
+        print("[Errno]")
+        return  ""
 

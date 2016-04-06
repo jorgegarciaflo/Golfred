@@ -8,8 +8,9 @@
 # ----------------------------------------------------------------------
 from __future__ import print_function
 
-from golfred import app
+from golfred import app, db
 import argparse
+
 
 
 if __name__ == '__main__':
