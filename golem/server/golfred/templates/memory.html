@@ -47,22 +47,24 @@
 	</tr>
 	<tr ng-repeat="memory in memories">
 		<td align="center"><img src='/{[memory.filename ]}'/></td>
+			<a href='/{[memory.filename ]}' data-lightbox="/{{memory.filename}}"><img src='/{[memory.filename ]}'/></a>
+		</td>
 
 		<td>
 		<div class="small button-group">
 		<div  ng-repeat="perception in memory.perceptions">
-		<a ng-click="changePerception(memory.id,perception.id)" class="button">{[perception.type]}</a>
+		<a ng-click="changePerception(memory.id,perception.id)" class="button secondary">{[perception.type]}</a>
 		</div>
 		</div>
 		<p>{[ perceptions[memory.id] ]}</p>
 		</td>
 		<td>
 		<div class="small button-group">
-		<button class="button" ng-click="processFred(memory)">
-			<i class="fi-loop"> </i>Fred
+		<button class="button" ng-click="processFred('{{exp.uuid}}',memory)">
+			Fred <i class="fi-loop"></i>
 		</button>
 		<button data-open="modal_golem" class="button" ng-click="processGolem(memory)">
-			<i class="fi-loop"> </i>Golem
+			Golem <i class="fi-pencil"></i>
 		</button>
 		<button data-open="modal_delete"  class="button" ng-click="deleteMemory(memory)">
 			<i  class="fi-trash"></i>
@@ -93,7 +95,7 @@
     <label>Position
         <input ng-model="position" type="text" placeholder="Which position was the robot?">
     </label>
-    <input type="submit" data-close aria-label="Add spatial memory" class="button radius" ng-click="processGolem()"  value="Yes"/>
+    <input type="submit" data-close aria-label="Add spatial memory" class="button radius" ng-click="processGolem('{{exp.uuid}}')"  value="Yes"/>
     <input type="submit" data-close aria-label="Close modal" class="button radius" value="No"/>
 	</form>
 	</div>

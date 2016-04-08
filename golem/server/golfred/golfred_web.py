@@ -57,6 +57,18 @@ def add_memory(uuid):
     else:
         return render_template("error.html",msg="No experience found with id: "+uuid)
 
+@web.route('/explore/<uuid>',methods=['GET'])
+def explore_memory(uuid):
+    form = MemoryForm()
+    if uuid and\
+       len(uuid)>0:
+            try:
+                exp=Experience.query.filter(Experience.uuid==uuid).one()
+                return render_template("explore_memory.html",exp=exp,form=form)
+            except NoResultFound:
+                return render_template("error.html",msg="No experience found with that id: "+uuid)
+    else:
+        return render_template("error.html",msg="No experience found with id: "+uuid)
 
 @web.route('/memories/<uuid>/<filename>')
 def uploaded_file(uuid,filename):

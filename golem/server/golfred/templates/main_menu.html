@@ -23,8 +23,9 @@
 			<td>{[ exp.name ]}</td>
 			<td>{[ exp.description ]}</td>
 			<td>
-				<a class='button' ><i ng-click="deleteExperience(exp)" data-open="modal_delete"class="fi-trash"></i></a>
-				<a class='button' href="memory/{[exp.uuid]}"><i class="fi-plus"></i></a>
+				<a class="button" href="memory/{[exp.uuid]}"><i class="fi-pencil"></i></a>
+				<a class="button" href="explore/{[exp.uuid]}"><i class="fi-eye"></i></a>
+				<button class="button" ng-click="deleteExperience(exp)" data-open="modal_delete"><i class="fi-trash"></i></button>
 			</td>
 		</tr>
 	</table>

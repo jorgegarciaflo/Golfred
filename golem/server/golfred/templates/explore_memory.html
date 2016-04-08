@@ -1,0 +1,29 @@
+{% extends "default.html" %}
+{% block title %}Exploring memories{% endblock %}
+
+{% block content %}
+
+<br/>
+<br/>
+<h3>Experience <em>{{exp.name}}</em></h3>
+
+<div ng-controller="memoryCtrl" ng-init="loadMemories('{{exp.uuid}}')" >
+
+<table>
+	<tr>
+		<th>Sentences</th>
+	</tr>
+	<tr ng-repeat="memory in memories">
+		<td>
+			<ul ng-repeat="p in memory.perceptions">
+				<li ng-if="p.type=='read' && getReadText(p.repr)">{[ getReadText(p.repr)]}</li>
+				<li ng-if="p.type=='analysis' && getDescriptionText(p.repr)">{[ getDescriptionText(p.repr)]}</li>
+			</ul>
+		</td>
+	</tr>
+</table>
+
+</div>
+
+
+{%endblock%}

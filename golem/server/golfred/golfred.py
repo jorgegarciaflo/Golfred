@@ -29,6 +29,7 @@ params_ocr = urllib.urlencode({
 params_analize = urllib.urlencode({
     # Request parameters
     'language': 'unk',
+    'visualFeatures': 'Categories,Tags,Description',
     'detectOrientation ': 'true',
 })
 
@@ -101,9 +102,23 @@ def text2fred(line,outputfile):
     try:
         print(outputfile)
         g=fredlib.getFredGraph(fredlib.preprocessText(line),outputfile)
-        print(line)
-        return  "hola"
+        nodes=[]
+        for n in g.getNodes():
+            nodes.append(n)
+        return  json.dumps(nodes)
     except Exception as e:
         print("[Errno]")
         return  ""
+
+def text2tipalo(line):
+    try:
+        conn = httplib.HTTPSConnection('wit.istc.cnr.it')
+        conn.request("GET", "/tipalo?resource=http://en.wikipedia.org/wiki/%s" %line.replace(" ","_"))
+        response = conn.getresponse()
+        ans = json.loads(response.read())
+        return ans
+    except Exception as e:
+        print("[Errno]")
+        return  ana
+
 

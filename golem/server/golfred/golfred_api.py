@@ -158,12 +158,13 @@ def add_memories(uuid):
 
             if request.args.get('cs', ''):
                 regions=golfred.cs_img2text(filename)
-                lines="\n\n".join(["\n".join(lines) for lines in regions])
-                pt = Perception(
-                    representation=lines,
-                    type = read_perception
-                    )
-                perceptions.append(pt)
+                if len(regions)>0:
+                    lines="\n\n".join(["\n".join(lines) for lines in regions])
+                    pt = Perception(
+                        representation=lines,
+                        type = read_perception
+                        )
+                    perceptions.append(pt)
             if request.args.get('analize', ''):
                 ana=golfred.cs_img2analize(filename)
                 pt = Perception(
@@ -174,18 +175,17 @@ def add_memories(uuid):
 
             if request.args.get('fred', '') and len(regions)>0:
                 filename_pref=filename.rsplit('.',1)
-                if len(lines[0].strip())>0:
+                if len(lines.strip()[0])>0:
                     filename_fred=filename_pref[0]+".fred"
-                    ana=golfred.text2fred(lines[0],filename_fred)
+                    ana=golfred.text2fred(lines.strip()[0],filename_fred)
+                    pt = Perception(
+                        representation=json.dumps(ana),
+                        type = fred_perception
+                        )
+                    perceptions.append(pt)
                 else:
                     ana=""
-                pt = Perception(
-                    representation=json.dumps(ana),
-                    type = fred_perception
-                    )
-                perceptions.append(pt)
- 
-         
+
             mem=Memory(filename=filename,
                 added_at=datetime.datetime.now(),
                 modified_at=datetime.datetime.now(),
@@ -210,22 +210,45 @@ def update_memory():
     if content['type']=="fred":
         try:
             memory=Memory.query.filter(Memory.id==id).one()
+            lines = None
+            analysis= None
+            p_fred=None
             for p in memory.perceptions:
                 if p.type.name=="fred":
                     p_fred=p
                 if p.type.name=="read":
                     lines=p.representation.split('\n')
+                if p.type.name=="analysis":
+                    analysis=json.loads(p.representation)
+
             filename_pref=memory.filename.rsplit('.',1)
             ana={'line':"",'fred':""}
-            if len(lines[0].strip())>0:
+            if lines and len(lines[0].strip())>0:
                 filename_fred=filename_pref[0]+".fred"
                 fred_output=golfred.text2fred(lines[0],filename_fred)
                 ana['line']=lines[0]
                 ana['filename']=filename_fred
                 ana['output']=fred_output
-
-            p_fred.representation=json.dumps(ana)
-            db.session.add(p_fred)
+            elif analysis and len(analysis)>0 and analysis['description']:
+               if analysis['description'] and\
+                  analysis['description']['captions'] and\
+                  len(analysis['description']['captions']) > 0 and\
+                  analysis['description']['captions'][0]['text']: 
+                    filename_fred=filename_pref[0]+".fred"
+                    fred_output=golfred.text2fred(analysis['description']['captions'][0]['text'],filename_fred)
+                    ana['line']=analysis['description']['captions'][0]['text']
+                    ana['filename']=filename_fred
+                    ana['output']=fred_output
+            if not p_fred:
+                fred_perception=PerceptionType.query.filter(PerceptionType.name=="fred").one()
+                p_fred = Perception(
+                        representation=json.dumps(ana),
+                        type = fred_perception
+                        )
+                memory.perceptions.append(p_fred)
+            else:            
+                p_fred.representation=json.dumps(ana)
+                db.session.add(p_fred)
             db.session.commit()
             return json.dumps({
                 'status': 'ok'
@@ -262,7 +285,6 @@ def update_memory():
             return json.dumps({
                         'status': 'error'
                     })
-        
 
 
 

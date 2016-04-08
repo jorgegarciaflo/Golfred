@@ -87,12 +87,12 @@ golfredApp.controller("modalDeleteCtrl", ['$scope','$http', function($scope, $ht
 
 golfredApp.controller("modalGolemCtrl", ['$scope','$http', function($scope, $http) {
 	$scope.position="None";
-	$scope.processGolem = function(){		
-		$scope.$emit('process_golem',{'position':$scope.position});
+	$scope.processGolem = function(uuid){		
+		$scope.$emit('process_golem',{'position':$scope.position,'uuid':uuid});
 	};
 
 	$scope.$on('position', function(event, args) {
-			$scope.position=args.position;
+		$scope.position=args['position'];
 	});
 }]);
 
@@ -148,20 +148,38 @@ golfredApp.controller("memoryCtrl", ['$scope', '$rootScope','$http', function($s
 			$scope.candidateDelete=mem;
 	};
 
-	$scope.processGolem = function(mem){		
-			$scope.candidateGolem=mem;
-			$scope.$emit('position',{'pos':mem.position});
+	$scope.getDescriptionText = function(rep){		
+			var rep = JSON.parse(rep)
+			return rep.description.captions[0].text;
 	};
 
-	$scope.processFred = function(mem){		
+	$scope.getReadText = function(rep){		
+			var rep = rep.split('\n')[0]
+			return rep;
+	};
+
+
+
+	$scope.processGolem = function(mem){		
+			$scope.candidateGolem=mem;
+			for(p in mem.perceptions){
+				p=mem.perceptions[p];
+				console.log(p);
+				if(p.type=="golem"){
+					$scope.$emit('position',{'pos':p.repr});
+					break;
+				}
+			}
+	};
+
+	$scope.processFred = function(uuid,mem){		
 			$scope.candidateDelete=mem;
-			var res = $http.post('/api/update/memory/',{"mem":mem.id.toString(),
+			var res = $http.post('/api/update/memory',{"mem":mem.id.toString(),
 														 "type":"fred"});
 			$scope.loadMemories(uuid);
 	};
 
 	$scope.readMemory = function(mem){		
-		console.log(mem.id);
 		var res = $http.post('/api/read/'+mem.id.toString());
 	};
 
@@ -177,12 +195,11 @@ golfredApp.controller("memoryCtrl", ['$scope', '$rootScope','$http', function($s
 	};
 
 
-	$scope.processGolemReal = function(position,mem){
+	$scope.processGolemReal = function(uuid,position,mem){
 		var data = 	{"mem":mem.id,
 												   "type":"golem",
 													"position":position
 													};
-		console.log(data);
 		var res = $http.post('/api/update/memory',data);
 		res.success(function(data, status, headers, config) {
 			$scope.loadMemories(uuid);
@@ -192,7 +209,6 @@ golfredApp.controller("memoryCtrl", ['$scope', '$rootScope','$http', function($s
 			alert( "failure message: " + JSON.stringify({data: data}));
 		});		
 	};
-
 
 
 	$scope.changePerception = function(memoryid,perceptionid){
@@ -233,7 +249,8 @@ golfredApp.controller("memoryCtrl", ['$scope', '$rootScope','$http', function($s
 
 	$rootScope.$on('process_golem', function(event, args) {
 			position=args['position'];
-			$scope.processGolemReal(position,$scope.candidateGolem);
+			uuid=args['uuid'];
+			$scope.processGolemReal(uuid,position,$scope.candidateGolem);
 	});
 
 
