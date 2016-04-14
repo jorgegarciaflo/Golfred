@@ -98,13 +98,18 @@ def cs_img2analize(imgfile):
             return  ""
 
 
+import re
+re_fred="^."
+
+
 def text2fred(line,outputfile):
     try:
-        print(outputfile)
         g=fredlib.getFredGraph(fredlib.preprocessText(line),outputfile)
         nodes=[]
+        print(line)
         for n in g.getNodes():
-            nodes.append(n)
+            nodes.append(re_fred.sub("",str(n)))
+            print(nodes[-1])
         return  json.dumps(nodes)
     except Exception as e:
         print("[Errno]")

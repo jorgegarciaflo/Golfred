@@ -54,15 +54,15 @@ class PerceptionType(db.Model):
 class Memory(db.Model):
     __tablename__ = 'memory'
     id = db.Column(db.Integer, primary_key=True)
-
+    order       = db.Column(db.Integer)
     filename    = db.Column(db.String(550), nullable=False)
     added_at    = db.Column(db.DateTime())
     modified_at = db.Column(db.DateTime())
     # Relationships
     typeid      = db.Column(db.Integer, db.ForeignKey('memory_type.id'))
     type        = db.relationship("MemoryType")
-    experience_id   = db.Column(db.Integer, db.ForeignKey('experience.id'))
-    perceptions = db.relationship("Perception")
+    experience_id = db.Column(db.Integer, db.ForeignKey('experience.id'))
+    perceptions   = db.relationship("Perception")
 
     def as_dict(self):
         return {

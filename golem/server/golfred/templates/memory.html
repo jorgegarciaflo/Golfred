@@ -8,58 +8,66 @@
 <h3>Experience <em>{{exp.name}}</em></h3>
 
 <div ng-controller="memoryCtrl" ng-init="loadMemories('{{exp.uuid}}')" >
+
 <div class="callout">
 <div class="row">
 <div class="large-12 columns">
 <p style="font-size:1.2em;">To add memories choose them</p>
 <form>
-<div class="row">
-<div class="large-3 columns">
-<button class="button success file-upload">
-<input type="file"   id="file" name="file[]" multiple ng-files="getTheFiles($files)" class="file-input">Choose files
-</input>
-</button>
-</div>
-
-<fieldset class="large-8 columns">
+<fieldset class="large-4 columns">
     <legend>Preprocess options</legend>
     <input name="fred"    id="cbfred"    type="checkbox" ng-model="fred"    checked><label for="fred">Fred</label>
     <input name="cs"      id="cbcs"      type="checkbox" ng-model="cs"      checked><label for="cs">OCR</label>
     <input name="analize" id="cbanalize" type="checkbox" ng-model="analize" checked><label for="analize">Analize</label>
 </fieldset>
-</div>
 
-<div class="row">
-<div class="large-3 columns">
-<input type="submit" ng-click="uploadFiles('{{exp.uuid}}')" data-close aria-label="Create experience" class="button radius" value="Add"/>
-</div>
+<div class="large-5 columns">
+<button class="button file-upload">
+	<input type="file"   id="file" name="file[]" multiple ng-files="uploadFiles('{{exp.uuid}}',$files)" class="file-input">Choose files
+</input>
+</button>
 </div>
 </form>
+
 </div>
 </div>
 </div>
 
-<table>
-	<tr>
-		<th width="20%">Memories</th>
-		<th width="50%">Perceptions</th>
-		<th width="30%">Options</th>
-	</tr>
-	<tr ng-repeat="memory in memories">
-		<td align="center"><img src='/{[memory.filename ]}'/></td>
-			<a href='/{[memory.filename ]}' data-lightbox="/{{memory.filename}}"><img src='/{[memory.filename ]}'/></a>
-		</td>
+<div class="callout">
+<div class="row">
+<div class="large-5 columns">
+	<button data-open="modal_action" class="button">Add memory</>
+</div>
+<div class="large-5 columns">
+	<button ng-click="saveOrder('{{exp.uuid}}')" class="button success">Save order</>
+</div>
+</div>
+</div>
 
-		<td>
+<ul ui-sortable ng-model="memories">
+	<li ng-repeat="memory in memories">
+		<div class="row">
+		<div class="large-2 columns">
+			<img ng-if="memory.type=='visual'" src='/{[memory.filename ]}'/>
+			<p ng-if="memory.type=='action'">ACTION</p>
+		</div>
+		<div class="large-5 columns">
 		<div class="small button-group">
 		<div  ng-repeat="perception in memory.perceptions">
 		<a ng-click="changePerception(memory.id,perception.id)" class="button secondary">{[perception.type]}</a>
 		</div>
 		</div>
 		<p>{[ perceptions[memory.id] ]}</p>
-		</td>
-		<td>
-		<div class="small button-group">
+		</div>
+
+		<div class="large-5 columns">
+		<div ng-if="memory.type=='visual'" class="small button-group">
+		<button class="button" ng-click="processRead('{{exp.uuid}}',memory)">
+			Read <i class="fi-loop"></i>
+		</button>
+		<button class="button" ng-click="processAnalysis('{{exp.uuid}}',memory)">
+			Analisis <i class="fi-loop"></i>
+		</button>
 		<button class="button" ng-click="processFred('{{exp.uuid}}',memory)">
 			Fred <i class="fi-loop"></i>
 		</button>
@@ -69,12 +77,12 @@
 		<button data-open="modal_delete"  class="button" ng-click="deleteMemory(memory)">
 			<i  class="fi-trash"></i>
 		</button>
-		</small>
-		</td>
-	</div>
-</table>
+		</div>
+		</div>
+		</div>
+	</li>
+</ul>
 </div>
-
 
 <div class="reveal" id="modal_delete" data-reveal>
 	<p style="font-size:1.2em;">Are you sure do you want to erase this memory?</p>
@@ -103,6 +111,23 @@
 	<span aria-hidden="true">&times;</span>
 	</button>
 </div>
+
+<div class="reveal" id="modal_action" data-reveal>
+	<p style="font-size:1.2em;">Action</p>
+	<div ng-controller="modalActionCtrl">
+    <label>
+        <input ng-model="action_type" type="text" placeholder="Write action type">
+		<textarea ng-model="action_representation" placeholder="Write the action representation"></textarea>
+    </label>
+    <input type="submit" data-close aria-label="Add spatial memory" class="button radius" ng-click="addAction('{{exp.uuid}}')"  value="Yes"/>
+    <input type="submit" data-close aria-label="Close modal" class="button radius" value="No"/>
+	</form>
+	</div>
+	<button class="close-button" data-close aria-label="Close modal" type="button">
+	<span aria-hidden="true">&times;</span>
+	</button>
+</div>
+
 
 
 

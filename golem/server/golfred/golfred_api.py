@@ -51,9 +51,10 @@ def status():
 @api.route('/api/v0.1/list/experiences',methods=['GET'])
 @api.route('/api/list/experiences',methods=['GET'])
 def list_experiences():
-    return json.dumps({
-            'experiences':[exp for exp,size in EXPERIENCES.iteritems()],
-        })
+    exps=Experience.query.order_by(Experience.id.desc()).all()
+    exps = [l.as_dict() for l in exps]
+    return json.dumps(exps)
+
 
 @api.route('/api/v0.1/latest/experiences',methods=['GET'])
 @api.route('/api/latest/experiences',methods=['GET'])
@@ -77,7 +78,7 @@ def list_visual_memories(uuid):
 
                 })
     try:
-        memories=Memory.query.filter(Memory.experience_id==exp.id).all()
+        memories=Memory.query.filter(Memory.experience_id==exp.id).order_by(Memory.order.asc()).all()
         res=[m.as_dict() for m in memories]
         return json.dumps(res)
     except NoResultFound:
@@ -159,9 +160,8 @@ def add_memories(uuid):
             if request.args.get('cs', ''):
                 regions=golfred.cs_img2text(filename)
                 if len(regions)>0:
-                    lines="\n\n".join(["\n".join(lines) for lines in regions])
                     pt = Perception(
-                        representation=lines,
+                        representation=json.dumps(regions),
                         type = read_perception
                         )
                     perceptions.append(pt)
@@ -175,9 +175,9 @@ def add_memories(uuid):
 
             if request.args.get('fred', '') and len(regions)>0:
                 filename_pref=filename.rsplit('.',1)
-                if len(lines.strip()[0])>0:
+                if len(regions)>0:
                     filename_fred=filename_pref[0]+".fred"
-                    ana=golfred.text2fred(lines.strip()[0],filename_fred)
+                    ana=golfred.text2fred(regions[0][0],filename_fred)
                     pt = Perception(
                         representation=json.dumps(ana),
                         type = fred_perception
@@ -205,7 +205,6 @@ def add_memories(uuid):
 @api.route('/api/update/memory',methods=['POST'])
 def update_memory():
     content = request.json
-    print(content)
     id=content['mem']
     if content['type']=="fred":
         try:
@@ -266,12 +265,12 @@ def update_memory():
                     p_golem=p
                     break
             if p_golem:
-                p_golem.representation=json.dumps({"positon":content['position']})
+                p_golem.representation=json.dumps({"position":content['position']})
                 db.session.add(p_golem)
             else:
                 golem_perception=PerceptionType.query.filter(PerceptionType.name=="golem").one()
                 p_golem = Perception(
-                    representation=json.dumps({"positon":content['position']}),
+                    representation=json.dumps({"position":content['position']}),
                     type = golem_perception
                     )
                 memory.perceptions.append(p_golem)
@@ -285,29 +284,112 @@ def update_memory():
             return json.dumps({
                         'status': 'error'
                     })
-
-
-
-@api.route('/api/v0.1/push/<idd>',methods=['PUT','GET'])
-@api.route('/api/push/<idd>',methods=['PUT','GET'])
-def push_memory(idd):
-    if request.method == 'PUT':
-        filename = secure_filename(filename)
-        filename =os.path.join(app.config['EXPERIENCES'],idd,filename)
-        with open(filename, 'w') as f:
-            f.write(request.data)
-        text=golfred.img2text(filename)
-        EXPERIENCES[idd].append(filename)
-        return json.dumps({
-                'status': 'ok',
-                'id_experience':idd,
-                'text':text,
-                'id_visual':filename
+    elif content['type']=="analysis":
+        try:
+            memory=Memory.query.filter(Memory.id==id).one()
+            p_analysis=None
+            for p in memory.perceptions:
+                if p.type.name=="analysis":
+                    p_analysis=p
+                    break
+            if p_analysis:
+                ana=golfred.cs_img2analize(memory.filename)
+                p_analysis.representation=json.dumps(ana)
+                db.session.add(p_analysis)
+            else:
+                analisys_perception=PerceptionType.query.filter(PerceptionType.name=="analysis").one()
+                ana=golfred.cs_img2analize(memory.filename)
+                pt = Perception(
+                    representation=json.dumps(ana),
+                    type = analisys_perception
+                    )
+                memory.perceptions.append(pt)
+            db.session.commit()
+            return json.dumps({
+                'status': 'ok'
                 })
-        return json.dumps({
-                'status': 'error'
+        except NoResultFound:
+            return json.dumps({
+                        'status': 'error'
+                    })
+
+    elif content['type']=="cs":
+        try:
+            memory=Memory.query.filter(Memory.id==id).one()
+            p_cs=None
+            for p in memory.perceptions:
+                if p.type.name=="read":
+                    p_cs=p
+                    break
+            if p_cs:
+                regions=golfred.cs_img2text(memory.filename)
+                p_cs.representation=json.dumps(regions)
+                db.session.add(p_cs)
+            else:
+                read_perception=PerceptionType.query.filter(PerceptionType.name=="read").one()
+                regions=golfred.cs_img2text(memory.filename)
+                if len(regions)>0:
+                    pt = Perception(
+                        representation=json.dumps(regions),
+                        type = read_perception
+                        )
+                    perceptions.append(pt)
+                memory.perceptions.append(pt)
+            db.session.commit()
+            return json.dumps({
+                'status': 'ok'
+                })
+        except NoResultFound:
+            return json.dumps({
+                        'status': 'error'
+                    })
+
+
+
+
+@api.route('/api/v0.1/push/<idd>',methods=['POST'])
+@api.route('/api/push/<idd>',methods=['POST'])
+def push_memory(idd):
+    content = request.json
+    uuid=content['uuid']
+    if content['type']=="action":
+        try:
+            action_memory=MemoryType.query.filter(MemoryType.name=="action").one()
+            type=content['type2']
+            repr=content['representation']
+            try:
+                action_perception=PerceptionType.query.filter(PerceptionType.name==type).one()
+            except:
+                action_perception=PerceptionType(name=type) 
+            exp=Experience.query.filter(Experience.uuid==uuid).one()
+            total_memories=Memory.query.filter(Memory.experience_id==exp.id).count()
+            mem=Memory(filename="",
+                added_at=datetime.datetime.now(),
+                modified_at=datetime.datetime.now(),
+                type=action_memory,
+                experience_id=exp.id,
+                perceptions=[],
+                order=total_memories+1
+            )
+            pt = Perception(
+                        representation=repr,
+                        type = action_perception
+            )
+            mem.perceptions.append(pt)
+            db.session.add(mem)
+            db.session.commit()
+
+            return json.dumps({
+                'status': 'ok'
             })
-    return 'ok'
+
+        except NoResultFound:
+            return json.dumps({
+                        'status': 'error',
+                        'message': 'Not experience found'
+
+                    })
+   
 
 
 
@@ -330,14 +412,127 @@ def delete_memory():
                 })
 
 
+@api.route('/api/v0.1/update/experience',methods=['POST'])
+@api.route('/api/update/experience',methods=['POST'])
+def update_experience():
+    content = request.json
+    uuid=content['uuid']
+    if content['type']=="order":
+        order=json.loads(content['order'])
+        try:
+            exp=Experience.query.filter(Experience.uuid==uuid).one()
+            memories=Memory.query.filter(Memory.experience_id==exp.id).all()
+            for memory in memories:
+                memory.order=order[str(memory.id)]
+                db.session.add(memory)
+            db.session.commit()
 
-  
-@api.route('/api/v0.1/summarise/<idd>',methods=['GET'])
-@api.route('/api/summarise/<idd>',methods=['GET'])
-def summary(idd):
-    return json.dumps({
-        'summary': ["i saw this", "and then this"],
-        'id_experience':idd
-    })
+            return json.dumps({
+                'status': 'ok'
+            })
+
+        except NoResultFound:
+            return json.dumps({
+                        'status': 'error',
+                        'message': 'Not experience found'
+
+                    })
+   
+
+import re
+re_words=re.compile('^\D+$')
+
+@api.route('/api/v0.1/summarize/memory/<uuid>',methods=['GET'])
+@api.route('/api/summarize/memory/<uuid>',methods=['GET'])
+def summarize(uuid):
+    try:
+        summary=[]
+        exp=Experience.query.filter(Experience.uuid==uuid).one()
+        memories=Memory.query.filter(Memory.experience_id==exp.id).all()
+        VARS={}
+        for memory in memories:
+            perceptions={'read':None}
+            # Extracting variables
+            try: 
+                try:
+                    VARS={'PREV_LOC':VARS['LOC']}
+                except KeyError:
+                    VARS={'PREV_LOC':None}
+            except UnboundLocalError:
+                VARS={'PREV_LOC':None}
+
+            for p in memory.perceptions:
+                perceptions[p.type.name]=json.loads(p.representation)
+            try:
+                VARS['LOC']=perceptions['golem']['position']
+            except KeyError:
+                VARS['LOC']=None
+         
+            if perceptions['analysis']:
+                for cat in perceptions['analysis']['categories']:
+                    try:
+                        if VARS['CAT_SCORE']<cat['score']:
+                            VARS['CAT_SCORE']=cat['score']
+                            VARS['CAT']=cat['name']
+                    except KeyError:
+                        VARS['CAT_SCORE']=cat['score']
+                        VARS['CAT']=cat['name']
+                for cap in perceptions['analysis']['description']['captions']:
+                    try:
+                        if VARS['CAP_SCORE']<cap['confidence']:
+                            VARS['CAP_SCORE']=cap['confidence']
+                            VARS['CAP']=cap['text']
+                    except KeyError:
+                        VARS['CAP_SCORE']=cap['confidence']
+                        VARS['CAP']=cap['text']
+            
+            if perceptions['read']:
+                f=False
+                for rs in perceptions['read']:
+                    for l in rs:
+                        if re_words.match(l):
+                            f=True
+                            break
+                    if f:
+                        break
+                        
+                VARS['TEXT']=l
 
 
+            # TEMPLATES
+            summary.append([])
+            if not VARS['LOC']==VARS['PREV_LOC']:
+                if VARS['PREV_LOC']=="hall" and VARS['LOC']=="office":
+                    summary[-1].append(u"I enter the {LOC}".format(**VARS))
+                elif VARS['PREV_LOC']=="office" and VARS['LOC']=="hall":
+                    summary[-1].append(u"I exit to {LOC}".format(**VARS))
+                else:
+                    summary[-1].append(u"I was in the {LOC}".format(**VARS))
+            else:
+                summary[-1].append(u"while being in {LOC} i also".format(**VARS))
+            if VARS['CAT']=='text_sign':
+                summary[-1].append(u"there i saw a {CAP}".format(**VARS))
+                summary[-1].append(u"it said {TEXT}".format(**VARS))
+            elif VARS['CAT']=='text_':
+                summary[-1].append(u"there there was a text".format(**VARS))
+                summary[-1].append(u"it was about {TEXT}".format(**VARS))
+            else:
+                summary[-1].append(u"i saw {CAP}".format(**VARS))
+                
+
+
+
+            
+
+
+
+
+
+        return json.dumps(summary)
+    except NoResultFound:
+        return json.dumps({
+                    'status': 'error',
+                    'message': 'Not experience found'
+
+                })
+    

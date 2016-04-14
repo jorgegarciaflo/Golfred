@@ -11,9 +11,11 @@
 
 <table>
 	<tr>
+		<th>Image</th>
 		<th>Sentences</th>
 	</tr>
 	<tr ng-repeat="memory in memories">
+		<td align="center"><img width="340" src='/{[memory.filename ]}'/></td>
 		<td>
 			<ul ng-repeat="p in memory.perceptions">
 				<li ng-if="p.type=='read' && getReadText(p.repr)">{[ getReadText(p.repr)]}</li>
@@ -21,6 +23,23 @@
 			</ul>
 		</td>
 	</tr>
+	<tr>
+		<th>Image</th>
+		<th>Objects</th>
+	</tr>
+	<tr ng-repeat="memory in memories">
+		<td align="center"><img width="340" src='/{[memory.filename ]}'/></td>
+		<td>
+			<ul ng-repeat="p in memory.perceptions">
+				<div ng-if="p.type=='analysis'">
+				<div ng-repeat="o in getTags(p.repr)">
+				<li>{[o]}</li>
+				</div>
+				</div>
+			</ul>
+		</td>
+	</tr>
+
 </table>
 
 </div>

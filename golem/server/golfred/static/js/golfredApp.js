@@ -1,4 +1,4 @@
-var golfredApp = angular.module("golfredApp", []);
+var golfredApp = angular.module("golfredApp", ['ui.sortable']);
 
 //golfredApp.controller('experienceCtrl', ['$scope', function($scope) {
 //  $scope.greeting = 'Hola!';
@@ -85,6 +85,16 @@ golfredApp.controller("modalDeleteCtrl", ['$scope','$http', function($scope, $ht
 }]);
 
 
+golfredApp.controller("modalActionCtrl", ['$scope','$http', function($scope, $http) {
+	$scope.action_type="";
+	$scope.action_representation="";
+	$scope.addAction = function(uuid){		
+		$scope.$emit('add_action',{'uuid':uuid,'type':$scope.action_type,'representation':$scope.action_representation});
+	};
+}]);
+
+
+
 golfredApp.controller("modalGolemCtrl", ['$scope','$http', function($scope, $http) {
 	$scope.position="None";
 	$scope.processGolem = function(uuid){		
@@ -121,13 +131,10 @@ golfredApp.controller("memoryCtrl", ['$scope', '$rootScope','$http', function($s
 	$scope.position="none";
 
 	var formdata = new FormData();
-	$scope.getTheFiles = function ($files) {
+	$scope.uploadFiles = function (uuid,$files) {
 		for (var i = 0; i < $files.length; i++) {
 			formdata.append("files", $files[i]);
 		}
-	};
-
-	$scope.uploadFiles = function (uuid) {
 		$http.post('/api/add/memories/'+uuid,formdata,{
 				withCredentials: true,
 				headers: {'Content-Type': undefined },
@@ -141,6 +148,20 @@ golfredApp.controller("memoryCtrl", ['$scope', '$rootScope','$http', function($s
 			});
 	};
 
+
+	$scope.saveOrder = function (uuid) {
+			var order={};
+			var i=0;
+			for(memory in $scope.memories){
+				order[$scope.memories[memory].id]=i;
+				i=i+1;
+			}
+			var res = $http.post('/api/update/experience',{"uuid":uuid,
+															"type":'order',
+													       "order":JSON.stringify(order)});
+
+	};
+
 	$scope.candidateDelete = [];
 	$scope.candidateGolem = [];
 
@@ -150,21 +171,42 @@ golfredApp.controller("memoryCtrl", ['$scope', '$rootScope','$http', function($s
 
 	$scope.getDescriptionText = function(rep){		
 			var rep = JSON.parse(rep)
-			return rep.description.captions[0].text;
+			if (rep.description){
+				return rep.description.captions[0].text;
+			}
+	};
+
+
+	$scope.getTags = function(rep){		
+			var rep = JSON.parse(rep);
+			var tags=[];
+			if(rep.tags && rep.tags.length>0){
+				for(tag in rep.tags.slice(0,5)){
+					tag=rep.tags[tag];
+					tags.push(tag.name);
+				}
+			return tags;
+			}
 	};
 
 	$scope.getReadText = function(rep){		
-			var rep = rep.split('\n')[0]
-			return rep;
+			var rep = JSON.parse(rep);
+			for (r in rep){
+				r=rep[r];
+				for(l in r){
+					l=r[l];
+					if(l.match(/^\D+$/)){
+						return l;
+					}
+				} 
+			}
 	};
-
 
 
 	$scope.processGolem = function(mem){		
 			$scope.candidateGolem=mem;
 			for(p in mem.perceptions){
 				p=mem.perceptions[p];
-				console.log(p);
 				if(p.type=="golem"){
 					$scope.$emit('position',{'pos':p.repr});
 					break;
@@ -178,6 +220,31 @@ golfredApp.controller("memoryCtrl", ['$scope', '$rootScope','$http', function($s
 														 "type":"fred"});
 			$scope.loadMemories(uuid);
 	};
+
+	$scope.processRead = function(uuid,mem){		
+			$scope.candidateDelete=mem;
+			var res = $http.post('/api/update/memory',{"mem":mem.id.toString(),
+														 "type":"cs"});
+			$scope.loadMemories(uuid);
+	};
+
+	$scope.processAnalysis = function(uuid,mem){		
+			$scope.candidateDelete=mem;
+			var res = $http.post('/api/update/memory',{"mem":mem.id.toString(),
+														 "type":"analysis"});
+			$scope.loadMemories(uuid);
+	};
+
+	$scope.addAction = function(uuid,type,representaion){		
+			var res = $http.post('/api/push/memory',{
+													 "uuid":uuid,
+													 "type":"action",
+													 "type2": type,
+													 "representation":representation});
+			$scope.loadMemories(uuid);
+	};
+
+
 
 	$scope.readMemory = function(mem){		
 		var res = $http.post('/api/read/'+mem.id.toString());
@@ -226,7 +293,8 @@ golfredApp.controller("memoryCtrl", ['$scope', '$rootScope','$http', function($s
 		}
 	}		
 
-	$scope.loadMemories = function(uuid){		
+	$scope.loadMemories = function(uuid){
+		$scope.saveOrder(uuid);
 		$http.get('/api/list/memories/'+uuid).
 			success(function(data, status, headers, config){
 			$scope.memories = data;
@@ -241,6 +309,13 @@ golfredApp.controller("memoryCtrl", ['$scope', '$rootScope','$http', function($s
 			alert( "failure message ");
 		});		
 	};
+
+	$rootScope.$on('add_action', function(event, args) {
+			type=args['type'];
+			representation=args['representation'];
+			uuid=args['uuid'];
+			$scope.addAction(uuid,type,representation);
+	});
 
 	$rootScope.$on('delete_memory', function(event, args) {
 			uuid=args['uuid'];
