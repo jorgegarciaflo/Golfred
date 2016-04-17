@@ -1,4 +1,5 @@
 {% extends "default.html" %}
+
 {% block title %}{% endblock %}
 
 {% block content %}
@@ -38,13 +39,16 @@
 <div class="reveal" id="modal_create" data-reveal>
 	<p style="font-size:1.2em;">To create a new experience enter the following information:</p>
 	<div ng-controller="modalCreateCtrl">
-	<form ng-submit="createExperience()">
-    {{ form.csrf_token }}
-	{{form.name.label}}
-    {{ form.name(placeholder="Name for the experience",size=20,**{'ng-model':'name'}) }} 
-	{{form.description.label}}
-    {{ form.description (placeholder="Description of the experience",size=500,**{'ng-model':'description'}) }} 
-    <input type="submit" data-close aria-label="Create experience" class="button radius" value="Create"/>
+	<form name="formCreateExperience" ng-submit="createExperience(formCreateExperience.$valid)" novalidate>
+	<label>Name
+	<input type="text" placeholder="Name for the experience" ng-required="true" ng-model='name' required> 
+	<p ng-show="formCreateExperience.name.$error.required" class="help-block">Name is required.</p>
+	</label>
+	<label>
+	Descripción
+    <textarea placeholder="Description of the experience" ng-model='description'></textarea>
+	</label> 
+    <input type="submit" data-close aria-label="Create experience" class="button radius"  ng-disabled="formCreateExperience.$invalid"   value="Create"/>
     <input type="submit" data-close aria-label="Close modal" class="button radius" value="Cancel"/>
 	</form>
 	</div>
@@ -54,8 +58,8 @@
 </div>
 
 <div class="reveal" id="modal_delete" data-reveal>
-	<p style="font-size:1.2em;">Are you sure do you want to erase this experience?</p>
 	<div ng-controller="modalDeleteCtrl">
+	<p style="font-size:1.2em;">Are you sure do you want to erase this experience?</p>
     <input type="submit" data-close aria-label="Delete experience" class="button radius" ng-click="deleteExperience()"  value="Yes"/>
     <input type="submit" data-close aria-label="Close modal" class="button radius" value="No"/>
 	</form>

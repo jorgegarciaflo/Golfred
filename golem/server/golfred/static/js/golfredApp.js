@@ -14,7 +14,7 @@ golfredApp.controller("experienceCtrl", ['$scope', '$rootScope', '$http', functi
 	$scope.experiences = [];
 	$scope.candidateDelete = [];
 
-	$scope.deleteExperience = function(exp){		
+	$scope.deleteExperience = function(exp){
 			$scope.candidateDelete=exp;
 	};
 
@@ -25,7 +25,7 @@ golfredApp.controller("experienceCtrl", ['$scope', '$rootScope', '$http', functi
 		});
 
 		res.error(function(data, status, headers, config) {
-			alert( "failure message: " + JSON.stringify({data: data}));
+			alert( "Error: " + data.msg);
 		});		
 	};
 
@@ -43,7 +43,7 @@ golfredApp.controller("experienceCtrl", ['$scope', '$rootScope', '$http', functi
 			$scope.loadExperiences();
 	});
 
-	$rootScope.$on('delete_expereince', function(event, args) {
+	$rootScope.$on('delete_experience', function(event, args) {
 			$scope.deleteExperienceReal($scope.candidateDelete);
 	});
 
@@ -53,20 +53,28 @@ golfredApp.controller("experienceCtrl", ['$scope', '$rootScope', '$http', functi
 }]);
 
 golfredApp.controller("modalCreateCtrl", ['$scope','$http', function($scope, $http) {
-	$scope.createExperience = function(){		
+	
+	$scope.createExperience = function(isValid){		
 		var dataExperience = {
 				name : $scope.name,
 				description : $scope.description,
 		};	
 
-		var res = $http.post('/api/create',dataExperience);
-		res.success(function(data, status, headers, config) {
-			$scope.$emit('reload',{});
-		});
+		console.log(isValid);
+		if(isValid){
+			var res = $http.post('/api/create/experience',dataExperience);
+			res.success(function(data, status, headers, config) {
+				if(data.status=="ok"){
+					$scope.$emit('reload',{});
+				}else{
+					alert( "Error: " + JSON.stringify({data: data}));
+				}
+			});
 
-		res.error(function(data, status, headers, config) {
-			alert( "failure message: " + JSON.stringify({data: data}));
-		});		
+			res.error(function(data, status, headers, config) {
+				alert( "failure message: " + JSON.stringify({data: data}));
+			});		
+		}
 
 		$scope.name='';
 		$scope.description='';
@@ -79,8 +87,8 @@ golfredApp.controller("modalDeleteCtrl", ['$scope','$http', function($scope, $ht
 		$scope.$emit('delete_experience',{});
 	};
 	
-	$scope.deleteMemory = function(uuid){		
-		$scope.$emit('delete_memory',{'uuid':uuid});
+	$scope.deleteEvent = function(uuid){		
+		$scope.$emit('delete_event',{'uuid':uuid});
 	};
 }]);
 
@@ -120,29 +128,30 @@ golfredApp.directive('ngFiles', ['$parse', function ($parse) {
 	}
 }])
 
-golfredApp.controller("memoryCtrl", ['$scope', '$rootScope','$http', function($scope,$rootScope,$http) {
+golfredApp.controller("eventCtrl", ['$scope', '$rootScope','$http', function($scope,$rootScope,$http) {
 
-	$scope.memories = [];
+	$scope.events = [];
 	$scope.perceptions={};
 
-	$scope.analize=true;
-    $scope.read=true;
-	$scope.fred=true;
-	$scope.position="none";
+	$scope.options={
+		'analize'=true,
+        'read'=true,
+		'fred'=true
+	}
 
 	var formdata = new FormData();
 	$scope.uploadFiles = function (uuid,$files) {
 		for (var i = 0; i < $files.length; i++) {
 			formdata.append("files", $files[i]);
 		}
-		$http.post('/api/add/memories/'+uuid,formdata,{
+		$http.post('/api/add/events/'+uuid,formdata,{
 				withCredentials: true,
 				headers: {'Content-Type': undefined },
 				transformRequest: angular.identity,
 				params: {'fred':$scope.fred,'analize':$scope.analize, 'read':$scope.read}
 			})
 			.success(function (d) {
-				$scope.loadMemories(uuid);
+				$scope.loadEvents(uuid);
 			})
 			.error(function () {
 			});
@@ -152,8 +161,8 @@ golfredApp.controller("memoryCtrl", ['$scope', '$rootScope','$http', function($s
 	$scope.saveOrder = function (uuid) {
 			var order={};
 			var i=0;
-			for(memory in $scope.memories){
-				order[$scope.memories[memory].id]=i;
+			for(event in $scope.events){
+				order[$scope.events[event].id]=i;
 				i=i+1;
 			}
 			var res = $http.post('/api/update/experience',{"uuid":uuid,
@@ -165,7 +174,7 @@ golfredApp.controller("memoryCtrl", ['$scope', '$rootScope','$http', function($s
 	$scope.candidateDelete = [];
 	$scope.candidateGolem = [];
 
-	$scope.deleteMemory = function(mem){		
+	$scope.deleteEvent = function(mem){		
 			$scope.candidateDelete=mem;
 	};
 
@@ -209,44 +218,44 @@ golfredApp.controller("memoryCtrl", ['$scope', '$rootScope','$http', function($s
 
 	$scope.processFred = function(uuid,mem){		
 			$scope.candidateDelete=mem;
-			var res = $http.post('/api/update/memory',{"mem":mem.id.toString(),
+			var res = $http.post('/api/update/event',{"mem":mem.id.toString(),
 														 "type":"fred"});
-			$scope.loadMemories(uuid);
+			$scope.loadEvents(uuid);
 	};
 
 	$scope.processRead = function(uuid,mem){		
 			$scope.candidateDelete=mem;
-			var res = $http.post('/api/update/memory',{"mem":mem.id.toString(),
+			var res = $http.post('/api/update/event',{"mem":mem.id.toString(),
 														 "type":"read"});
-			$scope.loadMemories(uuid);
+			$scope.loadEvents(uuid);
 	};
 
 	$scope.processAnalysis = function(uuid,mem){		
 			$scope.candidateDelete=mem;
-			var res = $http.post('/api/update/memory',{"mem":mem.id.toString(),
+			var res = $http.post('/api/update/event',{"mem":mem.id.toString(),
 														 "type":"analysis"});
-			$scope.loadMemories(uuid);
+			$scope.loadEvents(uuid);
 	};
 
 	$scope.addAction = function(uuid,type,representaion){		
-			var res = $http.post('/api/push/memory',{
+			var res = $http.post('/api/push/event',{
 													 "uuid":uuid,
 													 "type":"action",
 													 "type2": type,
 													 "representation":representation});
-			$scope.loadMemories(uuid);
+			$scope.loadEvents(uuid);
 	};
 
 
 
-	$scope.readMemory = function(mem){		
+	$scope.readEvent = function(mem){		
 		var res = $http.post('/api/read/'+mem.id.toString());
 	};
 
-	$scope.deleteMemoryReal = function(uuid,mem){		
-		var res = $http.post('/api/delete/memory',{"id":mem.id});
+	$scope.deleteEventReal = function(uuid,mem){		
+		var res = $http.post('/api/delete/event',{"id":mem.id});
 		res.success(function(data, status, headers, config) {
-			$scope.loadMemories(uuid);
+			$scope.loadEvents(uuid);
 		});
 
 		res.error(function(data, status, headers, config) {
@@ -260,9 +269,9 @@ golfredApp.controller("memoryCtrl", ['$scope', '$rootScope','$http', function($s
 												   "type":"golem",
 													"position":position
 													};
-		var res = $http.post('/api/update/memory',data);
+		var res = $http.post('/api/update/event',data);
 		res.success(function(data, status, headers, config) {
-			$scope.loadMemories(uuid);
+			$scope.loadEvents(uuid);
 		});
 
 		res.error(function(data, status, headers, config) {
@@ -271,14 +280,14 @@ golfredApp.controller("memoryCtrl", ['$scope', '$rootScope','$http', function($s
 	};
 
 
-	$scope.changePerception = function(memoryid,perceptionid){
-		for(memory in $scope.memories){
-			memory=$scope.memories[memory];
-			if(memory.id == memoryid){
-				for (perception in memory.perceptions){
-					perception=memory.perceptions[perception];
+	$scope.changePerception = function(eventid,perceptionid){
+		for(event in $scope.events){
+			event=$scope.events[memory];
+			if(event.id == memoryid){
+				for (perception in event.perceptions){
+					perception=event.perceptions[perception];
 					if(perceptionid == perception.id){
-						$scope.perceptions[memoryid]=perception.repr;
+						$scope.perceptions[eventid]=perception.repr;
 					}
 				}			
 		
@@ -286,15 +295,15 @@ golfredApp.controller("memoryCtrl", ['$scope', '$rootScope','$http', function($s
 		}
 	}		
 
-	$scope.loadMemories = function(uuid){
+	$scope.loadEvents = function(uuid){
 		$scope.saveOrder(uuid);
-		$http.get('/api/list/memories/'+uuid).
+		$http.get('/api/list/events/'+uuid).
 			success(function(data, status, headers, config){
-			$scope.memories = data;
-			for(memory in $scope.memories){
-				memory=$scope.memories[memory];
-				if(!$scope.perceptions[memory.id]){
-					$scope.perceptions[memory.id]=memory.perceptions[0].repr;
+			$scope.events = data;
+			for(event in $scope.events){
+				event=$scope.events[memory];
+				if(!$scope.perceptions[event.id]){
+					$scope.perceptions[event.id]=memory.perceptions[0].repr;
 				}
 			}
 			})
@@ -310,9 +319,9 @@ golfredApp.controller("memoryCtrl", ['$scope', '$rootScope','$http', function($s
 			$scope.addAction(uuid,type,representation);
 	});
 
-	$rootScope.$on('delete_memory', function(event, args) {
+	$rootScope.$on('delete_event', function(event, args) {
 			uuid=args['uuid'];
-			$scope.deleteMemoryReal(uuid,$scope.candidateDelete);
+			$scope.deleteEventReal(uuid,$scope.candidateDelete);
 	});
 
 	$rootScope.$on('process_golem', function(event, args) {

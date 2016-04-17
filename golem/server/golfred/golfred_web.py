@@ -22,15 +22,6 @@ from models import Experience
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.orm.exc import NoResultFound
 
-# FORMS
-class ExperienceForm(Form):
-    name         = StringField('Name', validators=[DataRequired()])
-    description  = TextAreaField('Description', validators=[DataRequired()])
-
-
-class MemoryForm(Form):
-    file        = FileField('Image', validators=[DataRequired()])
-
 # WEB
 web = Blueprint('web',__name__)
 
@@ -46,16 +37,11 @@ def index():
 
 @web.route('/memory/<uuid>',methods=['GET'])
 def add_memory(uuid):
-    form = MemoryForm()
-    if uuid and\
-       len(uuid)>0:
-            try:
-                exp=Experience.query.filter(Experience.uuid==uuid).one()
-                return render_template("memory.html",exp=exp,form=form)
-            except NoResultFound:
-                return render_template("error.html",msg="No experience found with that id: "+uuid)
-    else:
-        return render_template("error.html",msg="No experience found with id: "+uuid)
+    try:
+        exp=Experience.query.filter(Experience.uuid==uuid).one()
+        return render_template("memory.html",exp=exp)
+    except NoResultFound:
+        return render_template("error.html",msg="No experience found with that id: "+uuid)
 
 @web.route('/explore/<uuid>',methods=['GET'])
 def explore_memory(uuid):

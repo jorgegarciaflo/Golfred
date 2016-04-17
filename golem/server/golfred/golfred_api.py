@@ -8,7 +8,7 @@
 # ----------------------------------------------------------------------
 from __future__ import print_function
 
-from flask import request, Blueprint
+from flask import request, Blueprint,jsonify
 from werkzeug import secure_filename
 import golfred
 import json
@@ -22,16 +22,21 @@ from models import *
 from sqlalchemy.orm.exc import NoResultFound
 import re
 
+version='v0.1'
 
-@api.route('/api/v0.1',methods=['GET'])
+
+@api.route('/api/v01',methods=['GET'])
 @api.route('/api',methods=['GET'])
 def api_help():
-    return json.dumps(
+    return jsonify(
         {"Golfred":
             {'version':version,
              'actions':{
-                 'create': 'Creates experience',
-                 'list': 'List experience',
+                 'status':'Server status',
+                 'list/experiences': 'List experiences',
+                 'latest/experiences[/n]': 'List n latest experiences',
+                 'create/experience': 'Creates experience',
+                 'delete/experience': 'Delete experience',
                  'push': 'Adds visual memory to experience',
                  'summarize': 'Retrieve visual experience'
                  }
@@ -42,92 +47,101 @@ def api_help():
 @api.route('/api/v0.1/status',methods=['GET'])
 @api.route('/api/status',methods=['GET'])
 def status():
-    return json.dumps({
-            'experiences':len(EXPERIENCES),
+    total=Experience.query.count()
+    return jsonify({
+            'experiences':total,
             'status': 'ok'
         })
-
 
 @api.route('/api/v0.1/list/experiences',methods=['GET'])
 @api.route('/api/list/experiences',methods=['GET'])
 def list_experiences():
     exps=Experience.query.order_by(Experience.id.desc()).all()
     exps = [l.as_dict() for l in exps]
-    return json.dumps(exps)
+    return jsonify(exps)
 
 
-@api.route('/api/v0.1/latest/experiences',methods=['GET'])
-@api.route('/api/latest/experiences',methods=['GET'])
-@api.route('/api/v0.1/latest/experiences/<n>',methods=['GET'])
+@api.route('/api/latest/experiences',defaults={'n':10},methods=['GET'])
 @api.route('/api/latest/experiences/<n>',methods=['GET'])
-def latest_experiences(n=10):
-    exps=Experience.query.order_by(Experience.id.desc()).all()
+@api.route('/api/v0.1/latest/experiences',defaults={'n':10},methods=['GET'])
+@api.route('/api/v0.1/latest/experiences/<n>',methods=['GET'])
+def latest_experiences(n):
+    exps=Experience.query.order_by(Experience.id.desc()).limit(n)
     exps = [l.as_dict() for l in exps]
     return json.dumps(exps)
 
+@api.route('/api/v0.1/create/experience',methods=['POST'])
+@api.route('/api/create/experience',methods=['POST'])
+def new():
+    content = request.json
+    if content and\
+       len(content['name'])>0:
+            datetime_=datetime.datetime.now()
+            description=None
+            if content.has_key('description'):
+                description=content['description']
+            exp=Experience(
+                    name=content['name'],
+                    uuid=str(uuid.uuid4())[:12],
+                    description=description,
+                    created_at=datetime_,
+                    datetime=datetime_
+                )
+            db.session.add(exp)
+            db.session.commit()
+            return jsonify({
+                'add_experince_id':exp.uuid,
+                'status': 'ok'
+                })
+    else:
+        return jsonify({
+                    'status': 'error',
+                    'msg': "Problem with post message"
+                })
 
-@api.route('/api/v0.1/list/memories/<uuid>',methods=['GET'])
-@api.route('/api/list/memories/<uuid>',methods=['GET'])
+@api.route('/api/v0.1/delete/experience',methods=['POST'])
+@api.route('/api/delete/experience',methods=['POST'])
+def delete():
+    content = request.json
+    if not content:
+        return jsonify({
+                    'status': 'error',
+                    'msg':'No json post information'
+                })
+    if len(content['uuid'])>0:
+            exp=Experience.query.filter(Experience.uuid==content['uuid']).one()
+            db.session.delete(exp)
+            db.session.commit()
+            return jsonify({
+                    'deleted_experience_id':exp.id,
+                    'status': 'ok'
+                })
+    else:
+        return jsonify({
+                    'status': 'error',
+                    'msg':'No uuid information'
+                })
+
+
+@api.route('/api/v0.1/list/events/<uuid>',methods=['GET'])
+@api.route('/api/list/events/<uuid>',methods=['GET'])
 def list_visual_memories(uuid):
     try:
         exp=Experience.query.filter(Experience.uuid==uuid).one()
     except NoResultFound:
-        return json.dumps({
+        return jsonify({
                     'status': 'error',
-                    'message': 'Not experience found'
+                    'msg': 'Not experience found'
 
                 })
     try:
-        memories=Memory.query.filter(Memory.experience_id==exp.id).order_by(Memory.order.asc()).all()
-        res=[m.as_dict() for m in memories]
-        return json.dumps(res)
+        es=Event.query.filter(Event.experience_id==exp.id).order_by(Event.order.asc()).all()
+        return jsonify([e.as_dict() for e in es])
     except NoResultFound:
-        return json.dumps([])
-
-
-@api.route('/api/v0.1/create',methods=['POST'])
-@api.route('/api/create',methods=['POST'])
-def new():
-    content = request.json
-    if content and\
-       len(content['name'])>0 and\
-       len(content['description'])>0:
-            exp=Experience(name=content['name'],
-                    uuid=str(uuid.uuid4())[:15],
-                    description=content['description'],
-                    created_at=datetime.datetime.now(),
-                    modified_at=datetime.datetime.now()
-                )
-            db.session.add(exp)
-            db.session.commit()
-            return json.dumps({
-                    'id_experince':exp.id,
-                    'status': 'ok'
-                })
-    else:
-        return json.dumps({
-                    'status': 'error'
-                })
+        return jsonify([])
 
 
 
-@api.route('/api/v0.1/delete/experience',methods=['POST'])
-@api.route('/api/delete/expereince',methods=['POST'])
-def delete():
-    content = request.json
-    if content and\
-       len(content['uuid'])>0:
-            exp=Experience.query.filter(Experience.uuid==content['uuid']).one()
-            db.session.delete(exp)
-            db.session.commit()
-            return json.dumps({
-                    'id_experince':exp.id,
-                    'status': 'ok'
-                })
-    else:
-        return json.dumps({
-                    'status': 'error'
-                })
 
 def allowed_file(filename):
     return '.' in filename and \

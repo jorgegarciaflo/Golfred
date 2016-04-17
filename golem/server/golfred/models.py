@@ -13,83 +13,86 @@ class Experience(db.Model):
     __tablename__ = 'experience'
     id = db.Column(db.Integer, primary_key=True)
 
-    name        = db.Column(db.String(50), nullable=False)
-    uuid        = db.Column(db.String(15), nullable=False)
-    description = db.Column(db.Text(), nullable=False)
-    created_at  = db.Column(db.DateTime())
-    modified_at = db.Column(db.DateTime())
+    name          = db.Column(db.String(50), nullable=False)
+    uuid          = db.Column(db.String(15), nullable=False)
+    description   = db.Column(db.Text())
+    created_at    = db.Column(db.DateTime())
+    datetime      = db.Column(db.DateTime())
+    protected     = db.Column(db.Boolean(False))
 
     def as_dict(self):
         return {
-                'name':self.name,
-                'uuid':self.uuid,
+                'name'       :self.name,
+                'uuid'       :self.uuid,
                 'description':self.description,
-                'created_at':str(self.created_at),
-                'modified_at':str(self.modified_at),
-                }
-
-class MemoryType(db.Model):
-    __tablename__ = 'memory_type'
-    id          = db.Column(db.Integer, primary_key=True)
-    name        = db.Column(db.String(50), nullable=False)
-
-    def as_dict(self):
-        return {
-                'id':self.id,
-                'name':self.name,
-                }
-
-class PerceptionType(db.Model):
-    __tablename__ = 'perception_type'
-    id          = db.Column(db.Integer, primary_key=True)
-    name        = db.Column(db.String(50), nullable=False)
-
-    def as_dict(self):
-        return {
-                'id':self.id,
-                'name':self.name,
+                'created_at' :str(self.created_at),
+                'datetime'   :str(self.datetime),
+                'protected'  :str(self.protected),
                 }
 
 
-class Memory(db.Model):
-    __tablename__ = 'memory'
+class Event(db.Model):
+    __tablename__ = 'event'
     id = db.Column(db.Integer, primary_key=True)
     order       = db.Column(db.Integer)
     filename    = db.Column(db.String(550), nullable=False)
-    added_at    = db.Column(db.DateTime())
-    modified_at = db.Column(db.DateTime())
+    created_at  = db.Column(db.DateTime())
+    datetime    = db.Column(db.DateTime())
     # Relationships
-    typeid      = db.Column(db.Integer, db.ForeignKey('memory_type.id'))
-    type        = db.relationship("MemoryType")
+    typeid      = db.Column(db.Integer, db.ForeignKey('event_type.id'))
+    type        = db.relationship("EventType")
     experience_id = db.Column(db.Integer, db.ForeignKey('experience.id'))
-    perceptions   = db.relationship("Perception")
+    infos   = db.relationship("InfoSource")
 
     def as_dict(self):
         return {
                 'id':self.id,
                 'filename':self.filename,
-                'added_at':str(self.added_at),
-                'modified_at':str(self.modified_at),
+                'created_at':str(self.created_at),
+                'datetime':str(self.datetime),
                 'type': self.type.name,
-                'perceptions': [p.as_dict() for p in self.perceptions]
+                'infos': [p.as_dict() for p in self.infos]
                 }
     
 
-class Perception(db.Model):
-    __tablename__ = 'perception'
+class EventType(db.Model):
+    __tablename__ = 'event_type'
+    id          = db.Column(db.Integer, primary_key=True)
+    name        = db.Column(db.String(50), nullable=False)
+
+    def as_dict(self):
+        return {
+                'id':self.id,
+                'name':self.name,
+                }
+
+class InfoSource(db.Model):
+    __tablename__  = 'info'
     id = db.Column(db.Integer, primary_key=True)
-    representation  = db.Column(db.Text())
-    typeid          = db.Column(db.Integer, db.ForeignKey('perception_type.id'))
-    type            = db.relationship("PerceptionType")
-    memory_id       = db.Column(db.Integer, db.ForeignKey('memory.id'))
+    json           = db.Column(db.Text())
+    typeid         = db.Column(db.Integer, db.ForeignKey('info_type.id'))
+    type           = db.relationship("InfoSourceType")
+    event_id       = db.Column(db.Integer, db.ForeignKey('event.id'))
+    updated_at      = db.Column(db.DateTime())
+    datetime       = db.Column(db.DateTime())
     def as_dict(self):
         return {
                 'id':self.id,
                 'repr':self.representation,
-                'type': self.type.name
+                'type': self.type.name,
+                'update_at': self.updated_at,
+                'datetime': self.datetime
                 }
 
 
+class InfoSourceType(db.Model):
+    __tablename__ = 'info_type'
+    id          = db.Column(db.Integer, primary_key=True)
+    name        = db.Column(db.String(50), nullable=False)
 
+    def as_dict(self):
+        return {
+                'id':self.id,
+                'name':self.name,
+                }
 
-    
