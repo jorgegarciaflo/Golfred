@@ -14,7 +14,7 @@
 		<th>Image</th>
 		<th>Sentences</th>
 	</tr>
-	<tr ng-repeat="memory in memories">
+	<tr ng-repeat="memory in memories | filter:{type:'visual'}">
 		<td align="center"><img width="340" src='/{[memory.filename ]}'/></td>
 		<td>
 			<ul ng-repeat="p in memory.perceptions">
@@ -27,14 +27,12 @@
 		<th>Image</th>
 		<th>Objects</th>
 	</tr>
-	<tr ng-repeat="memory in memories">
+	<tr ng-repeat="memory in memories | filter:{type:'visual'}">
 		<td align="center"><img width="340" src='/{[memory.filename ]}'/></td>
 		<td>
-			<ul ng-repeat="p in memory.perceptions">
-				<div ng-if="p.type=='analysis'">
+			<ul ng-repeat="p in memory.perceptions | filter:{type:'analysis'}">
 				<div ng-repeat="o in getTags(p.repr)">
 				<li>{[o]}</li>
-				</div>
 				</div>
 			</ul>
 		</td>

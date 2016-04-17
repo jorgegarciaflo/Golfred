@@ -17,7 +17,7 @@
 <fieldset class="large-4 columns">
     <legend>Preprocess options</legend>
     <input name="fred"    id="cbfred"    type="checkbox" ng-model="fred"    checked><label for="fred">Fred</label>
-    <input name="cs"      id="cbcs"      type="checkbox" ng-model="cs"      checked><label for="cs">OCR</label>
+    <input name="read"    id="cbread"      type="checkbox" ng-model="read"      checked><label for="read">Read</label>
     <input name="analize" id="cbanalize" type="checkbox" ng-model="analize" checked><label for="analize">Analize</label>
 </fieldset>
 
@@ -74,10 +74,10 @@
 		<button data-open="modal_golem" class="button" ng-click="processGolem(memory)">
 			Golem <i class="fi-pencil"></i>
 		</button>
+		</div>
 		<button data-open="modal_delete"  class="button" ng-click="deleteMemory(memory)">
 			<i  class="fi-trash"></i>
 		</button>
-		</div>
 		</div>
 		</div>
 	</li>

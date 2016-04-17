@@ -20,7 +20,7 @@ api = Blueprint('api',__name__)
 from golfred_service import db
 from models import *
 from sqlalchemy.orm.exc import NoResultFound
-
+import re
 
 
 @api.route('/api/v0.1',methods=['GET'])
@@ -157,23 +157,29 @@ def add_memories(uuid):
             filename=os.path.join("memories", uuid,filename_)
             f.save(filename)
 
-            if request.args.get('cs', ''):
-                regions=golfred.cs_img2text(filename)
-                if len(regions)>0:
-                    pt = Perception(
-                        representation=json.dumps(regions),
-                        type = read_perception
-                        )
-                    perceptions.append(pt)
-            if request.args.get('analize', ''):
+            if request.args.get('analize', '')=="true":
                 ana=golfred.cs_img2analize(filename)
                 pt = Perception(
                     representation=json.dumps(ana),
                     type = analisys_perception
                     )
                 perceptions.append(pt)
+                if request.args.get('read', '')=="true":
+                    cat=golfred.getCategory(ana)
+                    regions,text=golfred.cs_img2text(filename,type=cat)
+                    if len(text)>0:
+                        pt = Perception(
+                            representation=json.dumps(
+                                {
+                                    'regions':regions,
+                                    'text':text
+                                }
+                                ),
+                            type = read_perception
+                            )
+                        perceptions.append(pt)
 
-            if request.args.get('fred', '') and len(regions)>0:
+            if request.args.get('fred', '')=="true" and len(regions)>0:
                 filename_pref=filename.rsplit('.',1)
                 if len(regions)>0:
                     filename_fred=filename_pref[0]+".fred"
@@ -186,12 +192,14 @@ def add_memories(uuid):
                 else:
                     ana=""
 
+            total_memories=Memory.query.filter(Memory.experience_id==exp.id).count()
             mem=Memory(filename=filename,
                 added_at=datetime.datetime.now(),
                 modified_at=datetime.datetime.now(),
                 type=visual_memory,
                 experience_id=exp.id,
-                perceptions=perceptions
+                perceptions=perceptions,
+                order=total_memories
             )
 
             db.session.add(mem)
@@ -216,16 +224,22 @@ def update_memory():
                 if p.type.name=="fred":
                     p_fred=p
                 if p.type.name=="read":
-                    lines=p.representation.split('\n')
+                    regions=json.loads(p.representation)
                 if p.type.name=="analysis":
                     analysis=json.loads(p.representation)
 
             filename_pref=memory.filename.rsplit('.',1)
             ana={'line':"",'fred':""}
-            if lines and len(lines[0].strip())>0:
+            if regions and len(regions[0])>0:
+                text=""
+                for ls in regions:
+                    for l in ls:
+                        if re.match('^\D+$',l):
+                            text=l
+                            break
                 filename_fred=filename_pref[0]+".fred"
-                fred_output=golfred.text2fred(lines[0],filename_fred)
-                ana['line']=lines[0]
+                fred_output=golfred.text2fred(text,filename_fred)
+                ana['line']=text
                 ana['filename']=filename_fred
                 ana['output']=fred_output
             elif analysis and len(analysis)>0 and analysis['description']:
@@ -275,7 +289,7 @@ def update_memory():
                     )
                 memory.perceptions.append(p_golem)
                 db.session.add(memory)
-  
+ 
             db.session.commit()
             return json.dumps({
                 'status': 'ok'
@@ -313,24 +327,37 @@ def update_memory():
                         'status': 'error'
                     })
 
-    elif content['type']=="cs":
+    elif content['type']=="read":
         try:
             memory=Memory.query.filter(Memory.id==id).one()
+            memory=Memory.query.filter(Memory.id==id).one()
+            lines = None
+            analysis= None
             p_cs=None
             for p in memory.perceptions:
                 if p.type.name=="read":
                     p_cs=p
-                    break
+                if p.type.name=="analysis":
+                    analysis=json.loads(p.representation)
+                    cat=golfred.getCategory(analysis)
             if p_cs:
-                regions=golfred.cs_img2text(memory.filename)
-                p_cs.representation=json.dumps(regions)
+                regions,text=golfred.cs_img2text(memory.filename,type=cat)
+                p_cs.representation=json.dumps(
+                        {
+                                'regions':regions,
+                                'text':text
+                        })
                 db.session.add(p_cs)
             else:
                 read_perception=PerceptionType.query.filter(PerceptionType.name=="read").one()
-                regions=golfred.cs_img2text(memory.filename)
-                if len(regions)>0:
+                regions,text=golfred.cs_img2text(memory.filename,type=cat)
+                if len(text)>0:
                     pt = Perception(
-                        representation=json.dumps(regions),
+                        representation=json.dumps(
+                            {
+                                'regions':regions,
+                                'text':text
+                            }),
                         type = read_perception
                         )
                     perceptions.append(pt)
@@ -343,8 +370,6 @@ def update_memory():
             return json.dumps({
                         'status': 'error'
                     })
-
-
 
 
 @api.route('/api/v0.1/push/<idd>',methods=['POST'])
@@ -369,8 +394,9 @@ def push_memory(idd):
                 type=action_memory,
                 experience_id=exp.id,
                 perceptions=[],
-                order=total_memories+1
+                order=total_memories
             )
+
             pt = Perception(
                         representation=repr,
                         type = action_perception

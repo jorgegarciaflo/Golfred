@@ -126,7 +126,7 @@ golfredApp.controller("memoryCtrl", ['$scope', '$rootScope','$http', function($s
 	$scope.perceptions={};
 
 	$scope.analize=true;
-    $scope.cs=true;
+    $scope.read=true;
 	$scope.fred=true;
 	$scope.position="none";
 
@@ -139,7 +139,7 @@ golfredApp.controller("memoryCtrl", ['$scope', '$rootScope','$http', function($s
 				withCredentials: true,
 				headers: {'Content-Type': undefined },
 				transformRequest: angular.identity,
-				params: {'fred':$scope.fred,'analize':$scope.analize, 'cs':$scope.cs}
+				params: {'fred':$scope.fred,'analize':$scope.analize, 'read':$scope.read}
 			})
 			.success(function (d) {
 				$scope.loadMemories(uuid);
@@ -191,15 +191,8 @@ golfredApp.controller("memoryCtrl", ['$scope', '$rootScope','$http', function($s
 
 	$scope.getReadText = function(rep){		
 			var rep = JSON.parse(rep);
-			for (r in rep){
-				r=rep[r];
-				for(l in r){
-					l=r[l];
-					if(l.match(/^\D+$/)){
-						return l;
-					}
-				} 
-			}
+			return rep.text;
+	
 	};
 
 
@@ -224,7 +217,7 @@ golfredApp.controller("memoryCtrl", ['$scope', '$rootScope','$http', function($s
 	$scope.processRead = function(uuid,mem){		
 			$scope.candidateDelete=mem;
 			var res = $http.post('/api/update/memory',{"mem":mem.id.toString(),
-														 "type":"cs"});
+														 "type":"read"});
 			$scope.loadMemories(uuid);
 	};
 

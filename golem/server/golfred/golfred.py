@@ -23,7 +23,7 @@ headers = {
 
 params_ocr = urllib.urlencode({
     # Request parameters
-    'visualFeatures': 'Categories'
+    'language': 'en'
 })
 
 params_analize = urllib.urlencode({
@@ -69,20 +69,39 @@ def img2text(imgfile):
     stdout, stderr = p.communicate()
     return stdout.splitlines()
 
-def cs_img2text(imgfile):
-        data = open(imgfile, 'rb').read()
+def cs_img2text(imgfile,type="text"):
         try:
+            data = open(imgfile, 'rb').read()
             conn = httplib.HTTPSConnection('api.projectoxford.ai')
             conn.request("POST", "/vision/v1.0/ocr?%s" % params_ocr, data, headers)
             response = conn.getresponse()
             text = json.loads(response.read())
             regions = [[" ".join([w['text'] for w in l['words']])   for  l in   r['lines']] for r in  text['regions']]
             conn.close()
-            print(regions)
-            return regions
+            if type=="text_":
+                text=[]
+                flag=False
+                for ls in regions:
+                    for l in ls:
+                        if re.match('^\D+$',l):
+                            text.append(l)
+                            flag=True
+                            break
+                    if flag:
+                        break
+                text=" ".join(text)
+            else:
+            #if type=="sign" or type =="others_":
+                text=[]
+                for ls in regions:
+                    for l in ls:
+                        if re.match('^\D+$',l):
+                            text.append(l)
+                text=" ".join(text)
+            return regions,text
         except Exception as e:
-            print("[Errno {0}] {1}".format(e.errno, e.strerror))
-            return  []
+            return  None,None
+
 
 def cs_img2analize(imgfile):
         try:
@@ -106,7 +125,6 @@ def text2fred(line,outputfile):
     try:
         g=fredlib.getFredGraph(fredlib.preprocessText(line),outputfile)
         nodes=[]
-        print(line)
         for n in g.getNodes():
             nodes.append(re_fred.sub("",str(n)))
             print(nodes[-1])
@@ -127,3 +145,15 @@ def text2tipalo(line):
         return  ana
 
 
+
+def getCategory(analysis):
+    try:
+        score=0.0
+        catM=None
+        for cat in analysis['categories']:
+            if cat['score']>score:
+                catM=cat['name']
+                score=cat['score']
+        return catM
+    except KeyError:
+        return None
