@@ -7,23 +7,23 @@
 <br/>
 <h3>Experience <em>{{exp.name}}</em></h3>
 
-<div ng-controller="memoryCtrl" ng-init="loadMemories('{{exp.uuid}}')" >
+<div ng-controller="eventCtrl" ng-init="loadEvents('{{exp.uuid}}')" >
 
 <div class="callout">
 <div class="row">
 <div class="large-12 columns">
-<p style="font-size:1.2em;">To add memories choose them</p>
+<p style="font-size:1.2em;">To add visual events chose the images to upload</p>
 <form>
 <fieldset class="large-4 columns">
     <legend>Preprocess options</legend>
-    <input name="fred"    id="cbfred"    type="checkbox" ng-model="fred"    checked><label for="fred">Fred</label>
-    <input name="read"    id="cbread"      type="checkbox" ng-model="read"      checked><label for="read">Read</label>
-    <input name="analize" id="cbanalize" type="checkbox" ng-model="analize" checked><label for="analize">Analize</label>
+    <input name="fred"    id="cbfred"    type="checkbox" ng-model="options.fred"    checked><label for="fred">Fred</label>
+    <input name="read"    id="cbread"      type="checkbox" ng-model="options.read"      checked><label for="read">Read</label>
+    <input name="analize" id="cbanalize" type="checkbox" ng-model="options.analize" checked><label for="analize">Analize</label>
 </fieldset>
 
 <div class="large-5 columns">
 <button class="button file-upload">
-	<input type="file"   id="file" name="file[]" multiple ng-files="uploadFiles('{{exp.uuid}}',$files)" class="file-input">Choose files
+	<input type="file"   id="file" name="file[]" multiple ng-files="uploadFiles('{{exp.uuid}}',$files)" class="file-input">Choose images
 </input>
 </button>
 </div>
@@ -36,7 +36,7 @@
 <div class="callout">
 <div class="row">
 <div class="large-5 columns">
-	<button data-open="modal_action" class="button">Add memory</>
+	<button data-open="modal_action" class="button">Add event</>
 </div>
 <div class="large-5 columns">
 	<button ng-click="saveOrder('{{exp.uuid}}')" class="button success">Save order</>
@@ -44,38 +44,32 @@
 </div>
 </div>
 
-<ul ui-sortable ng-model="memories">
-	<li ng-repeat="memory in memories">
+<ul ui-sortable ng-model="events">
+	<li ng-repeat="e in events">
 		<div class="row">
 		<div class="large-2 columns">
-			<img ng-if="memory.type=='visual'" src='/{[memory.filename ]}'/>
-			<p ng-if="memory.type=='action'">ACTION</p>
+			<img ng-if="e.type=='visual'" src='/{[e.filename]}'/>
+			<p ng-if="e.type=='action'">Event</p>
 		</div>
 		<div class="large-5 columns">
 		<div class="small button-group">
-		<div  ng-repeat="perception in memory.perceptions">
-		<a ng-click="changePerception(memory.id,perception.id)" class="button secondary">{[perception.type]}</a>
+		<div  ng-repeat="i in e.infos">
+		<a ng-click="changeInfo(e.id,i.id)" class="button secondary">{[i.type]}</a>
 		</div>
 		</div>
-		<p>{[ perceptions[memory.id] ]}</p>
+		<p>{[ infos[e.id] ]}</p>
 		</div>
 
 		<div class="large-5 columns">
-		<div ng-if="memory.type=='visual'" class="small button-group">
-		<button class="button" ng-click="processRead('{{exp.uuid}}',memory)">
+		<div ng-if="e.type=='visual'" class="small button-group">
+		<button class="button" ng-click="processRead('{{exp.uuid}}',e)">
 			Read <i class="fi-loop"></i>
 		</button>
-		<button class="button" ng-click="processAnalysis('{{exp.uuid}}',memory)">
+		<button class="button" ng-click="processAnalysis('{{exp.uuid}}',e)">
 			Analisis <i class="fi-loop"></i>
 		</button>
-		<button class="button" ng-click="processFred('{{exp.uuid}}',memory)">
-			Fred <i class="fi-loop"></i>
-		</button>
-		<button data-open="modal_golem" class="button" ng-click="processGolem(memory)">
-			Golem <i class="fi-pencil"></i>
-		</button>
 		</div>
-		<button data-open="modal_delete"  class="button" ng-click="deleteMemory(memory)">
+		<button data-open="modal_delete"  class="button" ng-click="deleteEvent(e)">
 			<i  class="fi-trash"></i>
 		</button>
 		</div>
@@ -85,9 +79,9 @@
 </div>
 
 <div class="reveal" id="modal_delete" data-reveal>
-	<p style="font-size:1.2em;">Are you sure do you want to erase this memory?</p>
+	<p style="font-size:1.2em;">Are you sure do you want to erase this event?</p>
 	<div ng-controller="modalDeleteCtrl">
-    <input type="submit" data-close aria-label="Delete experience" class="button radius" ng-click="deleteMemory('{{exp.uuid}}')"  value="Yes"/>
+    <input type="submit" data-close aria-label="Delete event" class="button radius" ng-click="deleteEvent('{{exp.uuid}}')"  value="Yes"/>
     <input type="submit" data-close aria-label="Close modal" class="button radius" value="No"/>
 	</form>
 	</div>
@@ -115,11 +109,16 @@
 <div class="reveal" id="modal_action" data-reveal>
 	<p style="font-size:1.2em;">Action</p>
 	<div ng-controller="modalActionCtrl">
-    <label>
-        <input ng-model="action_type" type="text" placeholder="Write action type">
-		<textarea ng-model="action_representation" placeholder="Write the action representation"></textarea>
+		<form name="formCreateAction" ng-submit="addAction('{{exp.uuid}}',formCreateAction.$valid)" novalidate>
+	<label>Type</label>
+	<input ng-model="action_type" type="text" placeholder="Write action type" ng-required="true" required>
+	<p ng-show="formCreateAction.action_type.$error.required" class="help-block">Type is required.</p>
+	<label>Command</label>
+		<input ng-model="action_command" type="text" placeholder="Write the action command" ng-required="true"></textarea>
+	<label>Arguments</label>
+		<textarea ng-model="action_args" placeholder="Write command arguments separated by comma"></textarea>
     </label>
-    <input type="submit" data-close aria-label="Add spatial memory" class="button radius" ng-click="addAction('{{exp.uuid}}')"  value="Yes"/>
+    <input type="submit" data-close aria-label="Add spatial memory" class="button radius" ng-disabled="formCreateAction.$invalid"  value="Yes"/>
     <input type="submit" data-close aria-label="Close modal" class="button radius" value="No"/>
 	</form>
 	</div>

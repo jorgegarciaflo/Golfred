@@ -13,6 +13,10 @@ from flask_sqlalchemy import SQLAlchemy
 from flask.ext.triangle import Triangle
 import golfred
 import argparse
+from rdflib import Graph
+
+g = Graph()
+g.parse('golfred/golfred.nt',format="nt")
 
 app = Flask('golfred')
 Triangle(app)

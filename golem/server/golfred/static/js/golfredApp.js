@@ -94,11 +94,14 @@ golfredApp.controller("modalDeleteCtrl", ['$scope','$http', function($scope, $ht
 
 
 golfredApp.controller("modalActionCtrl", ['$scope','$http', function($scope, $http) {
-	$scope.action_type="";
-	$scope.action_representation="";
-	$scope.addAction = function(uuid){		
-		$scope.$emit('add_action',{'uuid':uuid,'type':$scope.action_type,'representation':$scope.action_representation});
+$scope.addAction = function(uuid,isValid){
+		if(isValid){
+			$scope.$emit('add_action',{'uuid':uuid,'type':$scope.action_type,'command':$scope.action_command,'args':$scope.action_args});
+		}
 	};
+	$scope.action_type="";
+	$scope.action_command="";
+	$scope.action_args="";
 }]);
 
 
@@ -131,12 +134,12 @@ golfredApp.directive('ngFiles', ['$parse', function ($parse) {
 golfredApp.controller("eventCtrl", ['$scope', '$rootScope','$http', function($scope,$rootScope,$http) {
 
 	$scope.events = [];
-	$scope.perceptions={};
+	$scope.infos={};
 
 	$scope.options={
-		'analize'=true,
-        'read'=true,
-		'fred'=true
+		'analize':true,
+        'read':true,
+		'fred':false
 	}
 
 	var formdata = new FormData();
@@ -148,7 +151,7 @@ golfredApp.controller("eventCtrl", ['$scope', '$rootScope','$http', function($sc
 				withCredentials: true,
 				headers: {'Content-Type': undefined },
 				transformRequest: angular.identity,
-				params: {'fred':$scope.fred,'analize':$scope.analize, 'read':$scope.read}
+				params: {'fred':$scope.options.fred,'analize':$scope.options.analize, 'read':$scope.options.read}
 			})
 			.success(function (d) {
 				$scope.loadEvents(uuid);
@@ -161,14 +164,15 @@ golfredApp.controller("eventCtrl", ['$scope', '$rootScope','$http', function($sc
 	$scope.saveOrder = function (uuid) {
 			var order={};
 			var i=0;
-			for(event in $scope.events){
-				order[$scope.events[event].id]=i;
-				i=i+1;
-			}
-			var res = $http.post('/api/update/experience',{"uuid":uuid,
+			if($scope.events.length>0){
+				for(event in $scope.events){
+					order[$scope.events[event].id]=i;
+					i=i+1;
+				}
+				var res = $http.post('/api/update/experience',{"uuid":uuid,
 															"type":'order',
 													       "order":JSON.stringify(order)});
-
+			}
 	};
 
 	$scope.candidateDelete = [];
@@ -207,8 +211,8 @@ golfredApp.controller("eventCtrl", ['$scope', '$rootScope','$http', function($sc
 
 	$scope.processGolem = function(mem){		
 			$scope.candidateGolem=mem;
-			for(p in mem.perceptions){
-				p=mem.perceptions[p];
+			for(p in mem.infos){
+				p=mem.infos[p];
 				if(p.type=="golem"){
 					$scope.$emit('position',{'pos':p.repr});
 					break;
@@ -216,34 +220,26 @@ golfredApp.controller("eventCtrl", ['$scope', '$rootScope','$http', function($sc
 			}
 	};
 
-	$scope.processFred = function(uuid,mem){		
-			$scope.candidateDelete=mem;
-			var res = $http.post('/api/update/event',{"mem":mem.id.toString(),
-														 "type":"fred"});
+	$scope.processRead = function(uuid,e){		
+			var res = $http.post('/api/update/info',{"eid":e.id.toString(),
+													  "type":"read"});
 			$scope.loadEvents(uuid);
 	};
 
-	$scope.processRead = function(uuid,mem){		
-			$scope.candidateDelete=mem;
-			var res = $http.post('/api/update/event',{"mem":mem.id.toString(),
-														 "type":"read"});
+	$scope.processAnalysis = function(uuid,e){		
+			var res = $http.post('/api/update/info',{"eid":e.id.toString(),
+													 "type":"analysis"});
 			$scope.loadEvents(uuid);
 	};
 
-	$scope.processAnalysis = function(uuid,mem){		
-			$scope.candidateDelete=mem;
-			var res = $http.post('/api/update/event',{"mem":mem.id.toString(),
-														 "type":"analysis"});
-			$scope.loadEvents(uuid);
-	};
-
-	$scope.addAction = function(uuid,type,representaion){		
+	$scope.addAction = function(args){		
 			var res = $http.post('/api/push/event',{
-													 "uuid":uuid,
+													 "uuid":args['uuid'],
 													 "type":"action",
-													 "type2": type,
-													 "representation":representation});
-			$scope.loadEvents(uuid);
+													 "type_action": args['type'],
+													 "args": args['args'],
+													 "command":args['command']});
+			$scope.loadEvents(args['uuid']);
 	};
 
 
@@ -280,14 +276,14 @@ golfredApp.controller("eventCtrl", ['$scope', '$rootScope','$http', function($sc
 	};
 
 
-	$scope.changePerception = function(eventid,perceptionid){
-		for(event in $scope.events){
-			event=$scope.events[memory];
-			if(event.id == memoryid){
-				for (perception in event.perceptions){
-					perception=event.perceptions[perception];
-					if(perceptionid == perception.id){
-						$scope.perceptions[eventid]=perception.repr;
+	$scope.changeInfo = function(eid,iid){
+		for(e in $scope.events){
+			e=$scope.events[e];
+			if(e.id == eid){
+				for (i in e.infos){
+					i=e.infos[i];
+					if(iid == i.id){
+						$scope.infos[eid]=i.json;
 					}
 				}			
 		
@@ -300,23 +296,20 @@ golfredApp.controller("eventCtrl", ['$scope', '$rootScope','$http', function($sc
 		$http.get('/api/list/events/'+uuid).
 			success(function(data, status, headers, config){
 			$scope.events = data;
-			for(event in $scope.events){
-				event=$scope.events[memory];
-				if(!$scope.perceptions[event.id]){
-					$scope.perceptions[event.id]=memory.perceptions[0].repr;
+			for(e in $scope.events){
+				e=$scope.events[e];
+				if(!$scope.infos[e.id]){
+					$scope.infos[e.id]=e.infos[0].json;
 				}
 			}
 			})
 		.error(function(error, status, headers, config) {
-			alert( "failure message ");
+			alert( "Error "+error.msg);
 		});		
 	};
 
 	$rootScope.$on('add_action', function(event, args) {
-			type=args['type'];
-			representation=args['representation'];
-			uuid=args['uuid'];
-			$scope.addAction(uuid,type,representation);
+			$scope.addAction(args);
 	});
 
 	$rootScope.$on('delete_event', function(event, args) {

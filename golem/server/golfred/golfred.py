@@ -121,17 +121,13 @@ import re
 re_fred="^."
 
 
-def text2fred(line,outputfile):
-    try:
-        g=fredlib.getFredGraph(fredlib.preprocessText(line),outputfile)
+def text2fred(text,outputfile):
+        g=fredlib.getFredGraph(fredlib.preprocessText(text),outputfile)
         nodes=[]
         for n in g.getNodes():
-            nodes.append(re_fred.sub("",str(n)))
-            print(nodes[-1])
+            #nodes.append(re_fred.sub("",str(n)))
+            pass
         return  json.dumps(nodes)
-    except Exception as e:
-        print("[Errno]")
-        return  ""
 
 def text2tipalo(line):
     try:

@@ -24,7 +24,6 @@ import re
 
 version='v0.1'
 
-
 @api.route('/api/v01',methods=['GET'])
 @api.route('/api',methods=['GET'])
 def api_help():
@@ -34,11 +33,15 @@ def api_help():
              'actions':{
                  'status':'Server status',
                  'list/experiences': 'List experiences',
-                 'latest/experiences[/n]': 'List n latest experiences',
+                 'list/events/<uuid>': 'List events for experience with uuid',
+                 'latest/experiences[/<n>]': 'List n latest experiences',
                  'create/experience': 'Creates experience',
+                 'update/experience': 'Updates experience',
+                 'update/event': 'Updates event',
                  'delete/experience': 'Delete experience',
-                 'push': 'Adds visual memory to experience',
-                 'summarize': 'Retrieve visual experience'
+                 'add/events/<uuid>': 'Adds visual events for experience with uuid',
+                 'push/event': 'Adds visual event to experience',
+                 'summarize/experience/<uuid>': 'Summarizes an experience'
                  }
             }
         }
@@ -136,34 +139,51 @@ def list_visual_memories(uuid):
                 })
     try:
         es=Event.query.filter(Event.experience_id==exp.id).order_by(Event.order.asc()).all()
-        return jsonify([e.as_dict() for e in es])
+        return json.dumps([e.as_dict() for e in es])
     except NoResultFound:
-        return jsonify([])
-
-
+        return json.dumps([])
 
 
 def allowed_file(filename):
     return '.' in filename and \
            filename.rsplit('.', 1)[1] in set(['png', 'jpg', 'jpeg', 'gif'])
 
+@api.route('/api/v0.1/delete/event',methods=['POST'])
+@api.route('/api/delete/event',methods=['POST'])
+def delete_memory():
+    content = request.json
+    if content:
+        e=Event.query.filter(Event.id==content['id']).one()
+        db.session.delete(e)
+        db.session.commit()
+        return json.dumps({
+                'memory_deleted_id':e.id,
+                'status': 'ok'
+            })
+    else:
+        return json.dumps({
+                    'status': 'error'
+                })
 
-@api.route('/api/v0.1/add/memories/<uuid>',methods=['POST'])
-@api.route('/api/add/memories/<uuid>',methods=['POST'])
-def add_memories(uuid):
-    visual_memory=MemoryType.query.filter(MemoryType.name=="visual").one()
-    read_perception=PerceptionType.query.filter(PerceptionType.name=="read").one()
-    analisys_perception=PerceptionType.query.filter(PerceptionType.name=="analysis").one()
-    fred_perception=PerceptionType.query.filter(PerceptionType.name=="fred").one()
+
+
+@api.route('/api/v0.1/add/events/<uuid>',methods=['POST'])
+@api.route('/api/add/events/<uuid>',methods=['POST'])
+def add_events(uuid):
+    visual_event=EventType.query.filter(EventType.name=="visual").one()
     try:
         exp=Experience.query.filter(Experience.uuid==uuid).one()
     except NoResultFound:
         return json.dumps({
-                'status': 'error'
+                'status': 'error',
+                'msg':'Experience not found'
             })
     files = request.files.getlist('files')
+    datetime_=datetime.datetime.now()
     for f in files:
-        perceptions=[]
+        ana=None
+        text=None
+        infos=[]
         if f and allowed_file(f.filename):
             filename_ = secure_filename(f.filename)
             if not os.path.isdir(os.path.join('memories',uuid)):
@@ -171,251 +191,176 @@ def add_memories(uuid):
             filename=os.path.join("memories", uuid,filename_)
             f.save(filename)
 
+
             if request.args.get('analize', '')=="true":
+                analisys_info=InfoSourceType.query.filter(InfoSourceType.name=="analysis").one()
                 ana=golfred.cs_img2analize(filename)
-                pt = Perception(
-                    representation=json.dumps(ana),
-                    type = analisys_perception
+                if request.args.get('fred', '')=="true":
+                    filename_pref=filename.rsplit('.',1)
+                    filename_fred=filename_pref[0]+"analysis.fred"
+                    fred=golfred.text2fred(ana['description']['captions'][0],filename_fred)
+                    ana['fred']=fred
+                pt = InfoSource(
+                    json=json.dumps(ana),
+                    type = analisys_info,
+                    updated_at=datetime_,
+                    datetime=datetime_
                     )
-                perceptions.append(pt)
-                if request.args.get('read', '')=="true":
+                infos.append(pt)
+
+
+            if request.args.get('read', '')=="true":
+                read_info=InfoSourceType.query.filter(InfoSourceType.name=="read").one()
+                if ana:          
                     cat=golfred.getCategory(ana)
                     regions,text=golfred.cs_img2text(filename,type=cat)
-                    if len(text)>0:
-                        pt = Perception(
-                            representation=json.dumps(
-                                {
-                                    'regions':regions,
-                                    'text':text
-                                }
-                                ),
-                            type = read_perception
-                            )
-                        perceptions.append(pt)
-
-            if request.args.get('fred', '')=="true" and len(regions)>0:
-                filename_pref=filename.rsplit('.',1)
-                if len(regions)>0:
-                    filename_fred=filename_pref[0]+".fred"
-                    ana=golfred.text2fred(regions[0][0],filename_fred)
-                    pt = Perception(
-                        representation=json.dumps(ana),
-                        type = fred_perception
-                        )
-                    perceptions.append(pt)
                 else:
-                    ana=""
-
-            total_memories=Memory.query.filter(Memory.experience_id==exp.id).count()
-            mem=Memory(filename=filename,
-                added_at=datetime.datetime.now(),
-                modified_at=datetime.datetime.now(),
-                type=visual_memory,
+                    regions,text=golfred.cs_img2text(filename,type="text_")
+                if len(text)>0:
+                    pt = InfoSource(
+                        json=json.dumps(
+                            {
+                                'regions':regions,
+                                'text':text
+                            }
+                            ),
+                        updated_at=datetime_,
+                        datetime=datetime_,
+                        type = read_info
+                        )
+                    infos.append(pt)
+                    total_events=Event.query.filter(Event.experience_id==exp.id).count()
+            mem=Event(
+                filename=filename,
+                created_at=datetime.datetime.now(),
+                datetime=datetime.datetime.now(),
+                type=visual_event,
                 experience_id=exp.id,
-                perceptions=perceptions,
-                order=total_memories
+                infos=infos,
+                order=total_events
             )
-
             db.session.add(mem)
-    db.session.commit()
+            db.session.commit()
     return json.dumps({
             'status': 'ok'
             })
 
 
-@api.route('/api/v0.1/update/memory',methods=['POST'])
-@api.route('/api/update/memory',methods=['POST'])
-def update_memory():
+@api.route('/api/v0.1/update/info',methods=['POST'])
+@api.route('/api/update/info',methods=['POST'])
+def update_info():
     content = request.json
-    id=content['mem']
-    if content['type']=="fred":
-        try:
-            memory=Memory.query.filter(Memory.id==id).one()
-            lines = None
-            analysis= None
-            p_fred=None
-            for p in memory.perceptions:
-                if p.type.name=="fred":
-                    p_fred=p
-                if p.type.name=="read":
-                    regions=json.loads(p.representation)
-                if p.type.name=="analysis":
-                    analysis=json.loads(p.representation)
-
-            filename_pref=memory.filename.rsplit('.',1)
-            ana={'line':"",'fred':""}
-            if regions and len(regions[0])>0:
-                text=""
-                for ls in regions:
-                    for l in ls:
-                        if re.match('^\D+$',l):
-                            text=l
-                            break
-                filename_fred=filename_pref[0]+".fred"
-                fred_output=golfred.text2fred(text,filename_fred)
-                ana['line']=text
-                ana['filename']=filename_fred
-                ana['output']=fred_output
-            elif analysis and len(analysis)>0 and analysis['description']:
-               if analysis['description'] and\
-                  analysis['description']['captions'] and\
-                  len(analysis['description']['captions']) > 0 and\
-                  analysis['description']['captions'][0]['text']: 
-                    filename_fred=filename_pref[0]+".fred"
-                    fred_output=golfred.text2fred(analysis['description']['captions'][0]['text'],filename_fred)
-                    ana['line']=analysis['description']['captions'][0]['text']
-                    ana['filename']=filename_fred
-                    ana['output']=fred_output
-            if not p_fred:
-                fred_perception=PerceptionType.query.filter(PerceptionType.name=="fred").one()
-                p_fred = Perception(
-                        representation=json.dumps(ana),
-                        type = fred_perception
-                        )
-                memory.perceptions.append(p_fred)
-            else:            
-                p_fred.representation=json.dumps(ana)
-                db.session.add(p_fred)
-            db.session.commit()
-            return json.dumps({
-                'status': 'ok'
-                })
-        except NoResultFound:
-            return json.dumps({
-                        'status': 'error'
-                    })
-    elif content['type']=="golem":
-        try:
-            memory=Memory.query.filter(Memory.id==id).one()
-            p_golem=None
-            for p in memory.perceptions:
-                if p.type.name=="golem":
-                    p_golem=p
-                    break
-            if p_golem:
-                p_golem.representation=json.dumps({"position":content['position']})
-                db.session.add(p_golem)
-            else:
-                golem_perception=PerceptionType.query.filter(PerceptionType.name=="golem").one()
-                p_golem = Perception(
-                    representation=json.dumps({"position":content['position']}),
-                    type = golem_perception
-                    )
-                memory.perceptions.append(p_golem)
-                db.session.add(memory)
- 
-            db.session.commit()
-            return json.dumps({
-                'status': 'ok'
-                })
-        except NoResultFound:
-            return json.dumps({
-                        'status': 'error'
-                    })
-    elif content['type']=="analysis":
-        try:
-            memory=Memory.query.filter(Memory.id==id).one()
-            p_analysis=None
-            for p in memory.perceptions:
-                if p.type.name=="analysis":
-                    p_analysis=p
-                    break
-            if p_analysis:
-                ana=golfred.cs_img2analize(memory.filename)
-                p_analysis.representation=json.dumps(ana)
-                db.session.add(p_analysis)
-            else:
-                analisys_perception=PerceptionType.query.filter(PerceptionType.name=="analysis").one()
-                ana=golfred.cs_img2analize(memory.filename)
-                pt = Perception(
-                    representation=json.dumps(ana),
-                    type = analisys_perception
-                    )
-                memory.perceptions.append(pt)
-            db.session.commit()
-            return json.dumps({
-                'status': 'ok'
-                })
-        except NoResultFound:
-            return json.dumps({
-                        'status': 'error'
-                    })
-
+    try:
+        eid=content['eid']
+    except KeyError:
+        return json.dumps({
+                        'status': 'error',
+                        'msg':'Request with wrong arguments'
+            })
+    try:
+        e=Event.query.filter(Event.id==eid).one()
+    except NoResultFound:
+        return json.dumps({
+                    'status': 'error',
+                    'msg':'Event not found'
+        })
+    datetime_=datetime.datetime.now()
+    analysis=None
+    read=None
+    for i in e.infos:
+        if i.type.name=="analysis":
+            analysis=i
+        elif i.type.name=="read":
+            read=i
+    if content['type']=="analysis":
+        if not analysis:
+            analysis_info=InfoSourceType.query.filter(InfoSourceType.name=="analysis").one()
+            analysis = InfoSource(
+                    datetime=datetime_,
+                    type = analysis_info
+                )
+        ana=golfred.cs_img2analize(e.filename)
+        filename_pref=e.filename.rsplit('.',1)
+        filename_fred=filename_pref[0]+".analysis.fred"
+        fred=golfred.text2fred(ana['description']['captions'][0]['text'],filename_fred)
+        ana['fred']=fred
+        analysis.json=json.dumps(ana)
+        analysis.updated_at=datetime_
+        db.session.add(analysis)
+        db.session.commit()
     elif content['type']=="read":
-        try:
-            memory=Memory.query.filter(Memory.id==id).one()
-            memory=Memory.query.filter(Memory.id==id).one()
-            lines = None
-            analysis= None
-            p_cs=None
-            for p in memory.perceptions:
-                if p.type.name=="read":
-                    p_cs=p
-                if p.type.name=="analysis":
-                    analysis=json.loads(p.representation)
-                    cat=golfred.getCategory(analysis)
-            if p_cs:
-                regions,text=golfred.cs_img2text(memory.filename,type=cat)
-                p_cs.representation=json.dumps(
+        if not read:
+            read_info=InfoSourceType.query.filter(InfoSourceType.name=="read").one()
+            read = InfoSource(
+                    datetime=datetime_,
+                    type = read_info
+                )
+        if analysis:          
+            cat=golfred.getCategory(json.loads(analysis.json))
+            regions,text=golfred.cs_img2text(e.filename,type=cat)
+        else:
+            regions,text=golfred.cs_img2text(e.filename,type="text_")
+        filename_pref=e.filename.rsplit('.',1)
+        filename_fred=filename_pref[0]+".read.fred"
+        fred=golfred.text2fred(text,filename_fred)
+        read.updated_at=datetime_
+        read.json=json.dumps(
                         {
-                                'regions':regions,
-                                'text':text
-                        })
-                db.session.add(p_cs)
-            else:
-                read_perception=PerceptionType.query.filter(PerceptionType.name=="read").one()
-                regions,text=golfred.cs_img2text(memory.filename,type=cat)
-                if len(text)>0:
-                    pt = Perception(
-                        representation=json.dumps(
-                            {
-                                'regions':regions,
-                                'text':text
-                            }),
-                        type = read_perception
-                        )
-                    perceptions.append(pt)
-                memory.perceptions.append(pt)
-            db.session.commit()
-            return json.dumps({
-                'status': 'ok'
-                })
-        except NoResultFound:
-            return json.dumps({
-                        'status': 'error'
-                    })
+                            'regions':regions,
+                            'text':text,
+                            'fred':fred
+                        }
+                    )
+        db.session.add(read)
+        db.session.commit()
+    return json.dumps({
+            'status': 'ok'
+            })
 
 
-@api.route('/api/v0.1/push/<idd>',methods=['POST'])
-@api.route('/api/push/<idd>',methods=['POST'])
-def push_memory(idd):
+
+
+@api.route('/api/v0.1/push/event',methods=['POST'])
+@api.route('/api/push/event',methods=['POST'])
+def push_memory():
     content = request.json
     uuid=content['uuid']
+    datetime_=datetime.datetime.now()
     if content['type']=="action":
         try:
-            action_memory=MemoryType.query.filter(MemoryType.name=="action").one()
-            type=content['type2']
-            repr=content['representation']
+            action_memory=EventType.query.filter(EventType.name=="action").one()
+            type=content['type_action']
+            command=content['command']
+            args=[a.strip() for a in content['args'].split(',') if len(a.strip())>0]
+            print(args)
             try:
-                action_perception=PerceptionType.query.filter(PerceptionType.name==type).one()
+                action_info=InfoSourceType.query.filter(InfoSourceType.name==type).one()
             except:
-                action_perception=PerceptionType(name=type) 
+                action_info=InfoSourceType(name=type) 
             exp=Experience.query.filter(Experience.uuid==uuid).one()
-            total_memories=Memory.query.filter(Memory.experience_id==exp.id).count()
-            mem=Memory(filename="",
-                added_at=datetime.datetime.now(),
-                modified_at=datetime.datetime.now(),
+            total_events=Event.query.filter(Event.experience_id==exp.id).count()
+            mem=Event(filename="",
+                created_at=datetime_,
+                datetime=datetime_,
                 type=action_memory,
                 experience_id=exp.id,
-                perceptions=[],
-                order=total_memories
+                infos=[],
+                order=total_events
             )
 
-            pt = Perception(
-                        representation=repr,
-                        type = action_perception
+            pt = InfoSource(
+                json=json.dumps({
+                    'type':type,
+                    'command': {
+                            'name':command,
+                            'args':args
+                        }
+                    }),
+                type = action_info,
+                updated_at=datetime_,
+                datetime=datetime_,
             )
-            mem.perceptions.append(pt)
+            mem.infos.append(pt)
             db.session.add(mem)
             db.session.commit()
 
@@ -433,24 +378,6 @@ def push_memory(idd):
 
 
 
-@api.route('/api/v0.1/delete/memory',methods=['POST'])
-@api.route('/api/delete/memory',methods=['POST'])
-def delete_memory():
-    content = request.json
-    print(content)
-    if content:
-        mem=Memory.query.filter(Memory.id==content['id']).one()
-        db.session.delete(mem)
-        db.session.commit()
-        return json.dumps({
-                'id_memory':mem.id,
-                'status': 'ok'
-            })
-    else:
-        return json.dumps({
-                    'status': 'error'
-                })
-
 
 @api.route('/api/v0.1/update/experience',methods=['POST'])
 @api.route('/api/update/experience',methods=['POST'])
@@ -459,12 +386,19 @@ def update_experience():
     uuid=content['uuid']
     if content['type']=="order":
         order=json.loads(content['order'])
+        print(order)
         try:
             exp=Experience.query.filter(Experience.uuid==uuid).one()
-            memories=Memory.query.filter(Memory.experience_id==exp.id).all()
-            for memory in memories:
-                memory.order=order[str(memory.id)]
-                db.session.add(memory)
+        except NoResultFound:
+            return json.dumps({
+                        'status': 'error',
+                        'message': 'Not experience found'
+                    })
+        try: 
+            events=Event.query.filter(Event.experience_id==exp.id).all()
+            for e in events:
+                e.order=order[str(e.id)]
+                db.session.add(e)
             db.session.commit()
 
             return json.dumps({

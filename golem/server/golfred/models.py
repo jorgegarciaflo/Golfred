@@ -8,6 +8,7 @@
 # ----------------------------------------------------------------------
 
 from golfred_service import db
+import json
 
 class Experience(db.Model):
     __tablename__ = 'experience'
@@ -42,7 +43,7 @@ class Event(db.Model):
     typeid      = db.Column(db.Integer, db.ForeignKey('event_type.id'))
     type        = db.relationship("EventType")
     experience_id = db.Column(db.Integer, db.ForeignKey('experience.id'))
-    infos   = db.relationship("InfoSource")
+    infos       = db.relationship("InfoSource")
 
     def as_dict(self):
         return {
@@ -78,10 +79,10 @@ class InfoSource(db.Model):
     def as_dict(self):
         return {
                 'id':self.id,
-                'repr':self.representation,
+                'json': self.json,
                 'type': self.type.name,
-                'update_at': self.updated_at,
-                'datetime': self.datetime
+                'updated_at': str(self.updated_at),
+                'datetime': str(self.datetime)
                 }
 
 

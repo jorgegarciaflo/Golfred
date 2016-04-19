@@ -31,20 +31,19 @@ def service_running():
 
 @web.route('/',methods=['GET'])
 def index():
-    form = ExperienceForm()
-    return render_template("main_menu.html",form=form)
+    return render_template("main_menu.html")
 
 
-@web.route('/memory/<uuid>',methods=['GET'])
-def add_memory(uuid):
+@web.route('/edit/experience/<uuid>',methods=['GET'])
+def edit_experience(uuid):
     try:
         exp=Experience.query.filter(Experience.uuid==uuid).one()
-        return render_template("memory.html",exp=exp)
+        return render_template("edit_experience.html",exp=exp)
     except NoResultFound:
         return render_template("error.html",msg="No experience found with that id: "+uuid)
 
-@web.route('/explore/<uuid>',methods=['GET'])
-def explore_memory(uuid):
+@web.route('/visualize/experience/<uuid>',methods=['GET'])
+def visualize_experience(uuid):
     form = MemoryForm()
     if uuid and\
        len(uuid)>0:

@@ -12,7 +12,6 @@ from golfred import app, db
 import argparse
 
 
-
 if __name__ == '__main__':
     p = argparse.ArgumentParser("Golfred service")
     p.add_argument("--host",default="127.0.0.1",
