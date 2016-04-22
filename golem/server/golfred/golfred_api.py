@@ -17,7 +17,7 @@ import os
 import datetime
 
 api = Blueprint('api',__name__)
-from golfred_service import db
+from golfred_service import db, g
 from models import *
 from sqlalchemy.orm.exc import NoResultFound
 import re
@@ -413,100 +413,132 @@ def update_experience():
                     })
    
 
-import re
-re_words=re.compile('^\D+$')
-
-@api.route('/api/v0.1/summarize/memory/<uuid>',methods=['GET'])
-@api.route('/api/summarize/memory/<uuid>',methods=['GET'])
-def summarize(uuid):
+@api.route('/api/v0.1/summary/<uuid>',methods=['GET'])
+@api.route('/api/summary/<uuid>',methods=['GET'])
+def events2structure(uuid,confidence_analysis=0.3):
+    res=[]
     try:
-        summary=[]
         exp=Experience.query.filter(Experience.uuid==uuid).one()
-        memories=Memory.query.filter(Memory.experience_id==exp.id).all()
-        VARS={}
-        for memory in memories:
-            perceptions={'read':None}
-            # Extracting variables
-            try: 
-                try:
-                    VARS={'PREV_LOC':VARS['LOC']}
-                except KeyError:
-                    VARS={'PREV_LOC':None}
-            except UnboundLocalError:
-                VARS={'PREV_LOC':None}
-
-            for p in memory.perceptions:
-                perceptions[p.type.name]=json.loads(p.representation)
-            try:
-                VARS['LOC']=perceptions['golem']['position']
-            except KeyError:
-                VARS['LOC']=None
-         
-            if perceptions['analysis']:
-                for cat in perceptions['analysis']['categories']:
-                    try:
-                        if VARS['CAT_SCORE']<cat['score']:
-                            VARS['CAT_SCORE']=cat['score']
-                            VARS['CAT']=cat['name']
-                    except KeyError:
-                        VARS['CAT_SCORE']=cat['score']
-                        VARS['CAT']=cat['name']
-                for cap in perceptions['analysis']['description']['captions']:
-                    try:
-                        if VARS['CAP_SCORE']<cap['confidence']:
-                            VARS['CAP_SCORE']=cap['confidence']
-                            VARS['CAP']=cap['text']
-                    except KeyError:
-                        VARS['CAP_SCORE']=cap['confidence']
-                        VARS['CAP']=cap['text']
-            
-            if perceptions['read']:
-                f=False
-                for rs in perceptions['read']:
-                    for l in rs:
-                        if re_words.match(l):
-                            f=True
-                            break
-                    if f:
-                        break
-                        
-                VARS['TEXT']=l
-
-
-            # TEMPLATES
-            summary.append([])
-            if not VARS['LOC']==VARS['PREV_LOC']:
-                if VARS['PREV_LOC']=="hall" and VARS['LOC']=="office":
-                    summary[-1].append(u"I enter the {LOC}".format(**VARS))
-                elif VARS['PREV_LOC']=="office" and VARS['LOC']=="hall":
-                    summary[-1].append(u"I exit to {LOC}".format(**VARS))
-                else:
-                    summary[-1].append(u"I was in the {LOC}".format(**VARS))
-            else:
-                summary[-1].append(u"while being in {LOC} i also".format(**VARS))
-            if VARS['CAT']=='text_sign':
-                summary[-1].append(u"there i saw a {CAP}".format(**VARS))
-                summary[-1].append(u"it said {TEXT}".format(**VARS))
-            elif VARS['CAT']=='text_':
-                summary[-1].append(u"there there was a text".format(**VARS))
-                summary[-1].append(u"it was about {TEXT}".format(**VARS))
-            else:
-                summary[-1].append(u"i saw {CAP}".format(**VARS))
-                
-
-
-
-            
-
-
-
-
-
-        return json.dumps(summary)
     except NoResultFound:
         return json.dumps({
                     'status': 'error',
                     'message': 'Not experience found'
-
-                })
+        })
     
+    try:
+        es=Event.query.filter(Event.experience_id==exp.id).order_by(Event.order.asc()).all()
+        loc=None
+        locs=[]
+        preds=[]
+        for e in es:
+            i=e.infos[0]
+            pred_=json.loads(i.json)
+            preds.append(pred_)
+            # Figure out place 
+            if e.type.name=='action':
+                if loc==None and pred_['type']=='start':
+                    res.append([])
+                    loc=golfred.kb_getlocspace(g,pred_['command']['args'][0])
+                    locs.append(loc)
+                elif loc and pred_['type']=="move":
+                    loc_=golfred.kb_getlocspace(g,pred_['command']['args'][0])
+                    if not loc.eq(loc_):
+                        loc=loc_
+                        locs.append(loc)
+                        res.append([])
+                elif loc and pred_['type']=="fail":
+                    if pred_['command']['name']=='move':
+                        res[-1].pop()
+                        locs.pop()
+                        loc=locs[-1]
+                elif loc and pred_['type']=='finish':
+                    res.append([])
+
+            # Generate text
+            # START or new spatial reference
+            if e.type.name=='action' and pred_['type']=='start':
+                t,c=golfred.kb_drawtemplate(g,'start',res[-1])
+                loc__=golfred.kb_getlocname(g,loc)
+                res[-1].append((t.format(**{'loc':loc__}),c))
+                continue
+            if e.type.name=='action' and pred_['type']=='finish':
+                t,c=golfred.kb_drawtemplate(g,'connect',res[-1],C="text")
+                res[-1].append((t,c))
+                t,c=golfred.kb_drawtemplate(g,'finish',res[-1])
+                loc__=golfred.kb_getlocname(g,pred_['command']['args'][0])
+                res[-1].append((t.format(**{'loc':loc__}),c))
+                continue
+       
+            elif len(res[-1])==0:
+                t,c=golfred.kb_drawtemplate(g,'connect',res[-1],C="text")
+                res[-1].append((t,c))
+                if e.type.name=='action':
+                    t,c=golfred.kb_drawtemplate(g,pred_['command']['name'],res[-1])
+                    loc__=golfred.kb_getlocname(g,loc)
+                    if t:
+                        f=t.format(*[loc__])+' to '+golfred.kb_getlocname(g,preds[-1]['command']['args'][0])
+                        res[-1].append((f,c))
+                continue 
+            if e.type.name=='action' and pred_['type']=="fail":
+                t,c=golfred.kb_drawtemplate(g,'fail',res[-1])
+                res[-1].append((t,c))
+                if e.type.name=='action':
+                    t,c=golfred.kb_drawtemplate(g,preds[-2]['command']['name'],res[-1])
+                    miss_loc=golfred.kb_getlocspace(g,preds[-2]['command']['args'][0])
+                    loc__=golfred.kb_getlocname(g,miss_loc)
+                    if t:
+                        f=t.format(*[loc__])
+                        res[-1].append((f,c))
+                        
+                res[-1].append("but could't")
+                continue 
+            if e.type.name=='action' and pred_['type']=="move":
+                res[-1].append(("then",None))
+                if e.type.name=='action':
+                    t,c=golfred.kb_drawtemplate(g,pred_['command']['name'],res[-1])
+                    if t:
+                        loc__=golfred.kb_getlocname(g,pred_['command']['args'][0])
+                        f=t.format(str(loc__))
+                        res[-1].append((f,c))
+                continue 
+
+
+            if e.type.name=='action' and pred_['type']=="manipulation":
+                if e.type.name=='action':
+                    t,c=golfred.kb_drawtemplate(g,pred_['command']['name'],res[-1])
+                    if t:
+                        f=t.format(*pred_['command']['args'])
+                        res[-1].append((f,c))
+                continue 
+
+            if e.type.name=='visual':
+                for i in e.infos:
+                    pred_=json.loads(i.json)
+         
+                    t,c=golfred.kb_drawtemplate(g,i.type.name,res[-1])
+                    if t:
+                        ana=False
+                        if i.type.name=='analysis':
+                            ana=True
+                            if pred_['description']['captions'][0]['confidence']>confidence_analysis:
+                                f=t.format(*[pred_['description']['captions'][0]['text']])
+                            else: 
+                                continue
+                        elif i.type.name=="read":
+                            if not ana:
+                                f="there "+t.format(pred_['text'])
+                            else:
+                                f=t.format(pred_['text'])
+                        res[-1].append((f,c))
+            else:
+                pass
+           
+        return json.dumps(res)
+    except NoResultFound:
+        return json.dumps({
+                    'status': 'error',
+                    'message': 'Not events found'
+
+        })
+    
+

@@ -8,7 +8,7 @@
 # ----------------------------------------------------------------------
 from __future__ import print_function
 
-from golfred import app, db
+from golfred import app, db, g
 import argparse
 
 

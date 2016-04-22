@@ -14,6 +14,12 @@ import httplib, urllib, base64
 import keys
 import json
 import fredlib
+import random
+from rdflib import Graph, Literal, BNode, Namespace, RDF, URIRef
+
+ns=Namespace('http://golfred.com/')
+
+
 
 headers = {
     # Request headers
@@ -153,3 +159,64 @@ def getCategory(analysis):
         return catM
     except KeyError:
         return None
+
+
+def kb_getlocspace(g,p):
+    qres=g.query(
+        "SELECT ?label WHERE {{ ?p go:label '{0}' . ?p go:inside ?loc . ?loc go:label ?label .}}".format(p),
+        initNs={'go':ns})
+    loc=None
+    for r in qres:
+        loc=r
+        break
+    return loc[0]
+
+def kb_getlocname(g,p):
+    qres=g.query(
+        "SELECT ?locname ?type WHERE {{ ?p go:label '{0}' . ?p go:name ?locname . ?p go:type ?type .}}".format(p),
+        initNs={'go':ns})
+    for r in qres:
+        loc=r[0]
+        t=r[1]
+        break
+    qres=g.query(
+        "SELECT ?p WHERE {{ ?p go:type '{0}' .}}".format(str(t)),
+        initNs={'go':ns})
+    if len(qres)==1:
+        return "the "+loc
+    if len(qres)==0:
+        return "an unknown location"
+    if len(qres)>1:
+        return "a "+loc
+
+def kb_drawtemplate(g,l,curr,C="text-past"):
+    if len(curr)>0:
+        if curr[-1][1]:
+            C=curr[-1][1]
+
+    qres=g.query(
+        "SELECT ?template ?w WHERE {{ ?e go:label '{0}' . ?e go:template ?t . ?t go:{1} ?template . ?t go:weight ?w . }}".format(l,C),
+        initNs={'go':ns})
+
+    labels=[]
+    for t,w in qres:
+        for w in range(int(w)):
+            labels.append(t)
+
+    qres=g.query(
+        "SELECT ?c WHERE {{ ?e go:label '{0}' . ?e go:template ?t . ?t go:constraint ?c . }}".format(l),
+        initNs={'go':ns})
+
+    C=None
+    if len(qres)>0:
+        for r in qres:
+            C=str(r[0])
+            break
+
+
+    if len(labels)>0:
+        return str(random.choice(labels)),C
+    else:
+        return None,C
+
+
