@@ -1,0 +1,23 @@
+<ROUGE-EVAL version="1.0">
+
+<EVAL ID="1">
+<PEER-ROOT>
+models
+</PEER-ROOT>
+<MODEL-ROOT>
+models
+</MODEL-ROOT>
+<INPUT-FORMAT TYPE="SEE">
+</INPUT-FORMAT>
+<PEERS>
+<P ID="2">subject2.rf.html</P>
+<P ID="3">subject3.rf.html</P>
+<P ID="4">subject4.rf.html</P>
+<P ID="5">subject5.rf.html</P>
+</PEERS>
+<MODELS>
+<M ID="1">subject1.rf.html</M>
+</MODELS>
+</EVAL>
+
+</ROUGE-EVAL>
