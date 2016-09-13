@@ -1,0 +1,10 @@
+Evaluación cualitativa
+Todas las evaluaciones son sobre una escala de 0 a 10 (10=perfecto, 0=nulo)
+
+1. Precisión: ¿son precisas las descripciones de los lugares, el recorrido, las percepciones y las acciones?
+
+2. Legibilidad: ¿se entiende bien el texto?
+
+3. Fluidez: ¿se lee con fluidez el texto?
+
+4. Cobertura: ¿están todos los lugares, etapas, descripciones y acciones que la tarea solicita en el texto? 
