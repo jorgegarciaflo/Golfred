@@ -16,7 +16,7 @@ import uuid
 import os
 import datetime
 
-api = Blueprint('api',__name__)
+api = Blueprint('api',__name__,url_prefix="/api")
 from golfred_service import db, g
 from models import *
 from sqlalchemy.orm.exc import NoResultFound
@@ -24,8 +24,8 @@ import re
 
 version='v0.1'
 
-@api.route('/api/v01',methods=['GET'])
-@api.route('/api',methods=['GET'])
+@api.route('/v01',methods=['GET'])
+@api.route('/',methods=['GET'])
 def api_help():
     return jsonify(
         {"Golfred":
@@ -47,8 +47,8 @@ def api_help():
         }
     ) 
 
-@api.route('/api/v0.1/status',methods=['GET'])
-@api.route('/api/status',methods=['GET'])
+@api.route('/v0.1/status',methods=['GET'])
+@api.route('/status',methods=['GET'])
 def status():
     total=Experience.query.count()
     return jsonify({
@@ -56,25 +56,25 @@ def status():
             'status': 'ok'
         })
 
-@api.route('/api/v0.1/list/experiences',methods=['GET'])
-@api.route('/api/list/experiences',methods=['GET'])
+@api.route('/v0.1/list/experiences',methods=['GET'])
+@api.route('/list/experiences',methods=['GET'])
 def list_experiences():
     exps=Experience.query.order_by(Experience.id.desc()).all()
     exps = [l.as_dict() for l in exps]
     return jsonify(exps)
 
 
-@api.route('/api/latest/experiences',defaults={'n':10},methods=['GET'])
-@api.route('/api/latest/experiences/<n>',methods=['GET'])
-@api.route('/api/v0.1/latest/experiences',defaults={'n':10},methods=['GET'])
-@api.route('/api/v0.1/latest/experiences/<n>',methods=['GET'])
+@api.route('/latest/experiences',defaults={'n':10},methods=['GET'])
+@api.route('/latest/experiences/<n>',methods=['GET'])
+@api.route('/v0.1/latest/experiences',defaults={'n':10},methods=['GET'])
+@api.route('/v0.1/latest/experiences/<n>',methods=['GET'])
 def latest_experiences(n):
     exps=Experience.query.order_by(Experience.id.desc()).limit(n)
     exps = [l.as_dict() for l in exps]
     return json.dumps(exps)
 
-@api.route('/api/v0.1/create/experience',methods=['POST'])
-@api.route('/api/create/experience',methods=['POST'])
+@api.route('/v0.1/create/experience',methods=['POST'])
+@api.route('/create/experience',methods=['POST'])
 def new():
     content = request.json
     if content and\
@@ -93,7 +93,7 @@ def new():
             db.session.add(exp)
             db.session.commit()
             return jsonify({
-                'add_experince_id':exp.uuid,
+                'add_experience_id':exp.uuid,
                 'status': 'ok'
                 })
     else:
@@ -102,8 +102,8 @@ def new():
                     'msg': "Problem with post message"
                 })
 
-@api.route('/api/v0.1/delete/experience',methods=['POST'])
-@api.route('/api/delete/experience',methods=['POST'])
+@api.route('/v0.1/delete/experience',methods=['POST'])
+@api.route('/delete/experience',methods=['POST'])
 def delete():
     content = request.json
     if not content:
@@ -126,8 +126,8 @@ def delete():
                 })
 
 
-@api.route('/api/v0.1/list/events/<uuid>',methods=['GET'])
-@api.route('/api/list/events/<uuid>',methods=['GET'])
+@api.route('/v0.1/list/events/<uuid>',methods=['GET'])
+@api.route('/list/events/<uuid>',methods=['GET'])
 def list_visual_memories(uuid):
     try:
         exp=Experience.query.filter(Experience.uuid==uuid).one()
@@ -148,8 +148,8 @@ def allowed_file(filename):
     return '.' in filename and \
            filename.rsplit('.', 1)[1] in set(['png', 'jpg', 'jpeg', 'gif'])
 
-@api.route('/api/v0.1/delete/event',methods=['POST'])
-@api.route('/api/delete/event',methods=['POST'])
+@api.route('/v0.1/delete/event',methods=['POST'])
+@api.route('/delete/event',methods=['POST'])
 def delete_memory():
     content = request.json
     if content:
@@ -167,8 +167,8 @@ def delete_memory():
 
 
 
-@api.route('/api/v0.1/add/events/<uuid>',methods=['POST'])
-@api.route('/api/add/events/<uuid>',methods=['POST'])
+@api.route('/v0.1/add/events/<uuid>',methods=['POST'])
+@api.route('/add/events/<uuid>',methods=['POST'])
 def add_events(uuid):
     visual_event=EventType.query.filter(EventType.name=="visual").one()
     try:
@@ -179,6 +179,7 @@ def add_events(uuid):
                 'msg':'Experience not found'
             })
     files = request.files.getlist('files')
+    print(files)
     datetime_=datetime.datetime.now()
     for f in files:
         ana=None
@@ -229,7 +230,7 @@ def add_events(uuid):
                         type = read_info
                         )
                     infos.append(pt)
-                    total_events=Event.query.filter(Event.experience_id==exp.id).count()
+            total_events=Event.query.filter(Event.experience_id==exp.id).count()
             mem=Event(
                 filename=filename,
                 created_at=datetime.datetime.now(),
@@ -246,8 +247,8 @@ def add_events(uuid):
             })
 
 
-@api.route('/api/v0.1/update/info',methods=['POST'])
-@api.route('/api/update/info',methods=['POST'])
+@api.route('/v0.1/update/info',methods=['POST'])
+@api.route('/update/info',methods=['POST'])
 def update_info():
     content = request.json
     try:
@@ -320,9 +321,10 @@ def update_info():
 
 
 
-@api.route('/api/v0.1/push/event',methods=['POST'])
-@api.route('/api/push/event',methods=['POST'])
+@api.route('/v0.1/push/event',methods=['POST'])
+@api.route('/push/event',methods=['POST'])
 def push_memory():
+    print('holla')
     content = request.json
     uuid=content['uuid']
     datetime_=datetime.datetime.now()
@@ -379,14 +381,13 @@ def push_memory():
 
 
 
-@api.route('/api/v0.1/update/experience',methods=['POST'])
-@api.route('/api/update/experience',methods=['POST'])
+@api.route('/v0.1/update/experience',methods=['POST'])
+@api.route('/update/experience',methods=['POST'])
 def update_experience():
     content = request.json
     uuid=content['uuid']
     if content['type']=="order":
         order=json.loads(content['order'])
-        print(order)
         try:
             exp=Experience.query.filter(Experience.uuid==uuid).one()
         except NoResultFound:
@@ -413,8 +414,8 @@ def update_experience():
                     })
    
 
-@api.route('/api/v0.1/summary/<uuid>',methods=['GET'])
-@api.route('/api/summary/<uuid>',methods=['GET'])
+@api.route('/v0.1/summary/<uuid>',methods=['GET'])
+@api.route('/summary/<uuid>',methods=['GET'])
 def events2structure(uuid,confidence_analysis=0.3):
     res=[]
     try:
@@ -469,7 +470,7 @@ def events2structure(uuid,confidence_analysis=0.3):
                 res[-1].append((t.format(**{'loc':loc__}),c))
                 continue
        
-            elif len(res[-1])==0:
+            elif len(res)>0 and len(res[-1])==0:
                 t,c=golfred.kb_drawtemplate(g,'connect',res[-1],C="text")
                 res[-1].append((t,c))
                 if e.type.name=='action':
@@ -490,7 +491,7 @@ def events2structure(uuid,confidence_analysis=0.3):
                         f=t.format(*[loc__])
                         res[-1].append((f,c))
                         
-                res[-1].append("but could't")
+                res[-1].append(("but could't",None))
                 continue 
             if e.type.name=='action' and pred_['type']=="move":
                 res[-1].append(("then",None))
@@ -511,7 +512,7 @@ def events2structure(uuid,confidence_analysis=0.3):
                         res[-1].append((f,c))
                 continue 
 
-            if e.type.name=='visual':
+            if len(res)>0 and e.type.name=='visual':
                 for i in e.infos:
                     pred_=json.loads(i.json)
          
@@ -532,8 +533,166 @@ def events2structure(uuid,confidence_analysis=0.3):
                         res[-1].append((f,c))
             else:
                 pass
-           
-        return json.dumps(res)
+        print(res)   
+        return json.dumps([[x for x,y in b] for  b in res])
+    except NoResultFound:
+        return json.dumps({
+                    'status': 'error',
+                    'message': 'Not events found'
+
+        })
+    
+@api.route('/v0.1/jeni/<uuid>',methods=['GET'])
+@api.route('/jeni/<uuid>',methods=['GET'])
+def events2jeni(uuid,confidence_analysis=0.3):
+    res=[]
+    try:
+        exp=Experience.query.filter(Experience.uuid==uuid).one()
+    except NoResultFound:
+        return json.dumps({
+                    'status': 'error',
+                    'message': 'Not experience found'
+        })
+    
+    try:
+        es=Event.query.filter(Event.experience_id==exp.id).order_by(Event.order.asc()).all()
+        loc=None
+        locs=[]
+        preds=[]
+        for e in es:
+            i=e.infos[0]
+            pred_=json.loads(i.json)
+            print(pred_,e.type.name)
+            preds.append(pred_)
+            print("--------------->",res)
+            # Figure out place 
+            if e.type.name=='action':
+                if loc==None and pred_['type']=='start':
+                    res.append([])
+                    loc=golfred.kb_getlocgspace(g,pred_['command']['args'][0])
+                    locs.append(loc)
+                elif loc and pred_['type']=="move":
+                    loc_=golfred.kb_getlocgspace(g,pred_['command']['args'][0])
+                    if not loc.eq(loc_):
+                        loc=loc_
+                        locs.append(loc)
+                        res.append([])
+                elif loc and pred_['type']=="fail":
+                    if pred_['command']['name']=='move':
+                        res[-1].pop()
+                        locs.pop()
+                        loc=locs[-1]
+                elif loc and pred_['type']=='finish':
+                    res.append([])
+
+            # Generate text
+            # START or new spatial reference
+            if e.type.name=='action' and pred_['type']=='start':
+                c=None
+                semantics = golfred.kb_generatesemantics(g,pred_['command']['name'])
+                loc__=golfred.kb_getglabel(g,pred_['command']['args'][0])
+                f=semantics.format(str(loc__))
+                res[-1].append((f,c))
+                continue
+             
+            if e.type.name=='action' and pred_['type']=='finish':
+                #t,c=golfred.kb_drawtemplate(g,'connect',res[-1],C="text")
+                #res[-1].append((t,c))
+                #t,c=golfred.kb_drawtemplate(g,'finish',res[-1])
+                #loc__=golfred.kb_getlocname(g,pred_['command']['args'][0])
+                #res[-1].append((t.format(**{'loc':loc__}),c))
+                semantics = golfred.kb_generatesemantics(g,pred_['command']['name'])
+                loc__=golfred.kb_getglabel(g,pred_['command']['args'][0])
+                f=semantics.format(str(loc__))
+                res[-1].append((f,c))
+               
+                continue
+            if e.type.name=='action' and pred_['type']=="fail":
+                print("------> hello")
+                #t,c=golfred.kb_drawtemplate(g,'fail',res[-1])
+                #res[-1].append((t,c))
+                if e.type.name=='action':
+                    #t,c=golfred.kb_drawtemplate(g,preds[-2]['command']['name'],res[-1])
+                    semantics = golfred.kb_generatesemantics(g,pred_['command']['name'])
+                    semantics+= " d:fail(e2)"
+                    miss_loc=golfred.kb_getlocgspace(g,preds[-2]['command']['args'][0])
+                    f=semantics.format(*[miss_loc])
+                    res[-1].append((f,c))
+       
+            if len(res)>0 and len(res[-1])==0:
+                #t,c=golfred.kb_drawtemplate(g,'connect',res[-1],C="text")
+                #res[-1].append((t,c))
+                if e.type.name=='action':
+                    semantics=golfred.kb_generatesemantics(g,pred_['command']['name'])
+                    loc__=golfred.kb_getlocgspace(g,pred_['command']['args'][0])
+                    f=semantics.format(str(loc__))
+                    res[-1].append((f,c))
+ 
+                    #loc__=golfred.kb_getlocname(g,loc)
+                    #if t:
+                    #    f=t.format(*[loc__])+' to '+golfred.kb_getlocname(g,preds[-1]['command']['args'][0])
+                    #    res[-1].append((f,c))
+                continue 
+                       
+                #res[-1].append(("but could't",None))
+                continue 
+            if e.type.name=='action' and pred_['type']=="move":
+                #res[-1].append(("then",None))
+                c=None
+                if e.type.name=='action':
+                    semantics = golfred.kb_generatesemantics(g,pred_['command']['name'])
+                    loc__=golfred.kb_getglabel(g,pred_['command']['args'][0])
+                    f=semantics.format(str(loc__))
+                    res[-1].append((f,c))
+                continue
+
+            if e.type.name=='action' and pred_['type']=="manipulation":
+                if e.type.name=='action':
+                    semantics = golfred.kb_generatesemantics(g,pred_['command']['name'])
+                    f=semantics.format(*pred_['command']['args'])
+                    res[-1][-1]=res[-1][-1][0].replace(u'e2',u'e1'),None
+                    res[-1][-1]=res[-1][-1][0]+' z:before(e1 e2) ',None
+                    res[-1][-1]=res[-1][-1][0]+f,None
+                continue 
+
+            if len(res)>0 and e.type.name=='visual':
+                for i in e.infos:
+                    pred_=json.loads(i.json)
+         
+                    t,c=golfred.kb_drawtemplate(g,i.type.name,res[-1])
+                    if t:
+                        ana=False
+                        #if i.type.name=='analysis' and i.type.name=="read":
+                        #    ana=True
+                        #    if pred_['description']['captions'][0]['confidence']>confidence_analysis:
+                        #    else: 
+                        #        continue
+                    
+                        #if i.type.name=='analysis':
+                        #    ana=True
+                        #    if pred_['description']['captions'][0]['confidence']>confidence_analysis:
+                        #        f=t.format(*[pred_['description']['captions'][0]['text']])
+                        #    else: 
+                        #        continue
+                        if i.type.name=="read":
+                            text=cleanning(pred_['text'])
+                            semantics="ik:i(j) i:Experiencer(e2 j) a:visual(u) u:{0}({1}) i:Stimulus(e2 u) i:see(e2)".format(
+                                    text,
+                                    abbreviation(text))
+                            res[-1].append((semantics,c))
+            else:
+                pass
+        #print(res)   
+        f=open('golfred.jeni','w')
+        c=0
+        for segment in res:
+            for semantics,n in segment:
+                print("id_{0}".format(c),file=f)
+                print("semantics:[{0}]".format(semantics),file=f)
+                print("",file=f)
+                c+=1
+        f.close()
+        return json.dumps([[x for x,y in b] for  b in res])
     except NoResultFound:
         return json.dumps({
                     'status': 'error',
@@ -542,3 +701,17 @@ def events2structure(uuid,confidence_analysis=0.3):
         })
     
 
+def abbreviation(text):
+    t=[]
+    for l in text.split("_"):
+        if len(l)>0:
+            t.append(l[0].lower())
+    return "".join(t)
+
+def cleanning(text):
+    text=text.replace(" ","_")
+    text=text.replace("&","")
+    text=text.replace("-","")
+    text=text.replace(":","")
+    text=text.replace(".","")
+    return text

@@ -8,7 +8,7 @@
 # ----------------------------------------------------------------------
 from __future__ import print_function
 
-from flask import Flask, request
+from flask import Flask, request, Blueprint
 from flask_sqlalchemy import SQLAlchemy
 from flask.ext.triangle import Triangle
 import golfred
@@ -29,5 +29,4 @@ app.register_blueprint(api)
 
 from golfred_web import web
 app.register_blueprint(web)
-
 

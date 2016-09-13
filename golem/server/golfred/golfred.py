@@ -160,7 +160,6 @@ def getCategory(analysis):
     except KeyError:
         return None
 
-
 def kb_getlocspace(g,p):
     qres=g.query(
         "SELECT ?label WHERE {{ ?p go:label '{0}' . ?p go:inside ?loc . ?loc go:label ?label .}}".format(p),
@@ -170,6 +169,18 @@ def kb_getlocspace(g,p):
         loc=r
         break
     return loc[0]
+
+def kb_getlocgspace(g,p):
+    print(p)
+    qres=g.query(
+        "SELECT ?g_label WHERE {{ ?p go:label '{0}' . ?p go:inside ?loc . ?loc go:g_label ?g_label . }}".format(p),
+        initNs={'go':ns})
+    loc=None
+    for r in qres:
+        loc= r
+        break
+    return loc[0]
+
 
 def kb_getlocname(g,p):
     qres=g.query(
@@ -188,6 +199,32 @@ def kb_getlocname(g,p):
         return "an unknown location"
     if len(qres)>1:
         return "a "+loc
+
+
+
+def kb_getglabel(g,p):
+    qres=g.query(
+        "SELECT ?locname ?g_label WHERE {{ ?p go:label '{0}' . ?p go:name ?locname . ?p go:g_label ?g_label .}}".format(p),
+        initNs={'go':ns})
+    for r in qres:
+        loc=r[1]
+        break
+    return loc
+
+
+def kb_generatesemantics(g,l):
+    qres=g.query(
+        "SELECT ?s WHERE {{ ?e go:label '{0}' . ?e go:semantics ?s . }}".format(l),
+        initNs={'go':ns})
+
+    for q in qres:
+        semantics=q[0]
+        print(semantics)
+        break
+
+    return semantics
+
+
 
 def kb_drawtemplate(g,l,curr,C="text-past"):
     if len(curr)>0:
