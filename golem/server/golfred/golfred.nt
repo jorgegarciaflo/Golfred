@@ -1,0 +1,162 @@
+_:N6b21cf6037714beba9e33faa7f969cca <http://golfred.com/label> "start" .
+_:N1a1fdd56888a4acda5ee697c373ce99e <http://golfred.com/text-past> "i wanted" .
+_:Nfa87990aaca545a7a3c1d357b71de493 <http://golfred.com/weight> "2"^^<http://www.w3.org/2001/XMLSchema#integer> .
+_:N5d9d0057396948f6a29460e6574c0885 <http://golfred.com/inside> _:Ne237891f61b54bffa195ec69a372d6b0 .
+_:Nc8ba22084e0841728b7cce4b23f3a451 <http://golfred.com/label> "p8" .
+_:N37419189ec104810a523b217eee56d2c <http://xmlns.com/foaf/0.1/name> "Ivan Vladimir Meza Ruiz" .
+_:Nc5e60aca99f84fa1a02a30bd2a2b2fbb <http://golfred.com/name> "office of Ivan" .
+_:Ne237891f61b54bffa195ec69a372d6b0 <http://golfred.com/label> "officee" .
+_:N704f144846c04dcdbcfe3c9a0bed244c <http://golfred.com/template> _:Na9af71092a3c44bab0b708a5540fb97a .
+_:N5d9d0057396948f6a29460e6574c0885 <http://golfred.com/type> "point" .
+_:N8d0cff6fdac44cbfac0b56bf4a1e8a3b <http://golfred.com/label> "take" .
+_:Ncc2f20544d5845d2920ae3f40c1bae26 <http://golfred.com/text-past> "there was {0}" .
+_:N44b1e4204c59430abe748a65053d6b30 <http://golfred.com/g_label> "meeting_room" .
+_:Nf7f9556f535644ef9c61f39c77c7bc3d <http://golfred.com/text-past> "i saw {0}" .
+_:N7009c36917714e6395764de7a72e904b <http://golfred.com/weight> "2"^^<http://www.w3.org/2001/XMLSchema#integer> .
+_:Nb93aa09e63c54fc5a18edd08b6fd53d9 <http://golfred.com/name> "desk" .
+_:N9d10ade0827b4396b905844c6ed8a00a <http://golfred.com/template> _:Nd01cfec33dc74426b274609f1aefc4c9 .
+_:N6b21cf6037714beba9e33faa7f969cca <http://golfred.com/template> _:Ned98d81a262b41168e148e97b3da2d72 .
+_:N3d1d51dd610142668c6a695e42b64186 <http://golfred.com/inside> _:N44b1e4204c59430abe748a65053d6b30 .
+_:N2979599b6d764ddb84fbe02c29a9491f <http://golfred.com/text-past> "i leaved the {0}" .
+_:N12d37aac64f44fc0932886b5a238b7c4 <http://golfred.com/weight> "2"^^<http://www.w3.org/2001/XMLSchema#integer> .
+_:Nd01cfec33dc74426b274609f1aefc4c9 <http://golfred.com/constraint> "text-inf" .
+_:Ne5d5c85d220745aaa84fd445930975f3 <http://golfred.com/name> "sign" .
+_:N2d7930601f6347ebaafc126c7775ddf4 <http://golfred.com/weight> "1"^^<http://www.w3.org/2001/XMLSchema#integer> .
+_:Nf3da23976b724ed3b58e4c6750d01a19 <http://golfred.com/label> "hall" .
+_:Nd724b572f7db4b658899b87593a1778b <http://golfred.com/text-inf> "to walk towards {0}" .
+_:Nfa87990aaca545a7a3c1d357b71de493 <http://golfred.com/text-past> "i finished" .
+_:N358f5b3556a74734a2fb8ed356b0e04d <http://golfred.com/g_label> "laboratory" .
+_:N8d0cff6fdac44cbfac0b56bf4a1e8a3b <http://golfred.com/template> _:N589ca08ecd0a44489274eb72fb1ba98d .
+_:N37419189ec104810a523b217eee56d2c <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://xmlns.com/foaf/0.1/person> .
+_:N6b21cf6037714beba9e33faa7f969cca <http://golfred.com/template> _:Nd2851e6f626340178e678b213dc2782f .
+_:N44345bb7a19044dab3fce42c7d7d04ed <http://golfred.com/weight> "2"^^<http://www.w3.org/2001/XMLSchema#integer> .
+_:Nf3da23976b724ed3b58e4c6750d01a19 <http://golfred.com/name> "hall" .
+_:N644eeaa1e7e042c7a76d1183a62ad56b <http://golfred.com/inside> _:N44b1e4204c59430abe748a65053d6b30 .
+_:N44b1e4204c59430abe748a65053d6b30 <http://golfred.com/type> "room" .
+_:N281bcdd6662445699e5aa968e144548d <http://golfred.com/weight> "1"^^<http://www.w3.org/2001/XMLSchema#integer> .
+_:Nd01cfec33dc74426b274609f1aefc4c9 <http://golfred.com/weight> "2"^^<http://www.w3.org/2001/XMLSchema#integer> .
+_:N644eeaa1e7e042c7a76d1183a62ad56b <http://golfred.com/label> "p6" .
+_:Ndda07196c65f45a3a0d5585e1c479915 <http://golfred.com/text-past> "i tried" .
+_:N358f5b3556a74734a2fb8ed356b0e04d <http://golfred.com/label> "laboratory" .
+_:Nf3da23976b724ed3b58e4c6750d01a19 <http://golfred.com/g_label> "hall" .
+_:Ne237891f61b54bffa195ec69a372d6b0 <http://golfred.com/g_label> "Ernesto_Bibriesca_s_cubicle" .
+_:Nc8ba22084e0841728b7cce4b23f3a451 <http://golfred.com/g_label> "lab_desk" .
+_:N37419189ec104810a523b217eee56d2c <http://golfred.com/works> _:N7fc6fcd1c9404c8d93cf5dd10c0b695a .
+_:N0490cdd12ae4425c8737538ac8fbe3e0 <http://golfred.com/semantics> "yh:i(t) y:Agent(e2 t) k:{0}(m) y:Location(e2 m) y:finish(e2)" .
+_:N1a1fdd56888a4acda5ee697c373ce99e <http://golfred.com/constraint> "text-inf" .
+_:N0b4e895fedc540b583d26f6bf9e4624d <http://golfred.com/template> _:N2d7930601f6347ebaafc126c7775ddf4 .
+_:Ne5d5c85d220745aaa84fd445930975f3 <http://golfred.com/inside> _:Nf3da23976b724ed3b58e4c6750d01a19 .
+_:Ne5d9e7f67be5450caf27edd339e6803d <http://golfred.com/g_label> "meeting_room_table" .
+_:N1a1fdd56888a4acda5ee697c373ce99e <http://golfred.com/weight> "2"^^<http://www.w3.org/2001/XMLSchema#integer> .
+_:N2979599b6d764ddb84fbe02c29a9491f <http://golfred.com/weight> "1"^^<http://www.w3.org/2001/XMLSchema#integer> .
+_:Ne5d9e7f67be5450caf27edd339e6803d <http://golfred.com/g_label> "ivan_desk" .
+_:Ndda07196c65f45a3a0d5585e1c479915 <http://golfred.com/text-inf> "to try" .
+_:Nc8ba22084e0841728b7cce4b23f3a451 <http://golfred.com/type> "point" .
+_:Ndda07196c65f45a3a0d5585e1c479915 <http://golfred.com/weight> "1"^^<http://www.w3.org/2001/XMLSchema#integer> .
+_:N8457c2c33c2a4591bf0d2bbdca33da02 <http://golfred.com/weight> "2"^^<http://www.w3.org/2001/XMLSchema#integer> .
+_:N281bcdd6662445699e5aa968e144548d <http://golfred.com/text-inf> "to go to {0}" .
+_:Nc5e60aca99f84fa1a02a30bd2a2b2fbb <http://golfred.com/type> "officei" .
+_:N7fc6fcd1c9404c8d93cf5dd10c0b695a <http://xmlns.com/foaf/0.1/name> "Computer Science Departament" .
+_:N91f5b441600f4b9088965326d2ebfc7a <http://golfred.com/works> _:N7fc6fcd1c9404c8d93cf5dd10c0b695a .
+_:Nd01cfec33dc74426b274609f1aefc4c9 <http://golfred.com/text-inf> "to be suppose" .
+_:N0125e5de156444ffa55f9e2e1f97bc89 <http://golfred.com/template> _:Nfbd6d96d042d431abd9f05850642c32f .
+_:Ne5d9e7f67be5450caf27edd339e6803d <http://golfred.com/type> "point" .
+_:N8d0cff6fdac44cbfac0b56bf4a1e8a3b <http://golfred.com/template> _:N44345bb7a19044dab3fce42c7d7d04ed .
+_:Ned98d81a262b41168e148e97b3da2d72 <http://golfred.com/text-inf> "to begin at {loc}" .
+_:N4dce90f7eef440e79ccaaa69b7b56236 <http://golfred.com/weight> "1"^^<http://www.w3.org/2001/XMLSchema#integer> .
+_:Nd01cfec33dc74426b274609f1aefc4c9 <http://golfred.com/text-past> "i was supposed" .
+_:N7fc6fcd1c9404c8d93cf5dd10c0b695a <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://xmlns.com/foaf/0.1/orgnization> .
+_:N281bcdd6662445699e5aa968e144548d <http://golfred.com/text-past> "i went to {0}" .
+_:Ned98d81a262b41168e148e97b3da2d72 <http://golfred.com/text-past> "i begun at {loc}" .
+_:Ne5d5c85d220745aaa84fd445930975f3 <http://golfred.com/g_label> "lobby" .
+_:Ne5d5c85d220745aaa84fd445930975f3 <http://golfred.com/label> "p1" .
+_:N589ca08ecd0a44489274eb72fb1ba98d <http://golfred.com/weight> "1"^^<http://www.w3.org/2001/XMLSchema#integer> .
+_:N358f5b3556a74734a2fb8ed356b0e04d <http://golfred.com/type> "laboratory" .
+_:N5d9d0057396948f6a29460e6574c0885 <http://golfred.com/label> "p2" .
+_:Ncc2f20544d5845d2920ae3f40c1bae26 <http://golfred.com/weight> "2"^^<http://www.w3.org/2001/XMLSchema#integer> .
+_:N8457c2c33c2a4591bf0d2bbdca33da02 <http://golfred.com/text-past> "i stopped" .
+_:Nb93aa09e63c54fc5a18edd08b6fd53d9 <http://golfred.com/label> "p3" .
+_:N6b21cf6037714beba9e33faa7f969cca <http://golfred.com/template> _:N12d37aac64f44fc0932886b5a238b7c4 .
+_:Nb0709966ea0c4a17960b8bbc4f6d4f4a <http://golfred.com/text-inf> "to move to {0}" .
+_:Na1ba05b327a84d99b0a2feeef5e389be <http://golfred.com/template> _:Nd724b572f7db4b658899b87593a1778b .
+_:N12d37aac64f44fc0932886b5a238b7c4 <http://golfred.com/text-inf> "to start at {loc}" .
+_:N12d37aac64f44fc0932886b5a238b7c4 <http://golfred.com/text-past> "i started at {loc}" .
+_:Nb0709966ea0c4a17960b8bbc4f6d4f4a <http://golfred.com/weight> "2"^^<http://www.w3.org/2001/XMLSchema#integer> .
+_:Ne5d5c85d220745aaa84fd445930975f3 <http://golfred.com/type> "point" .
+_:Nf3da23976b724ed3b58e4c6750d01a19 <http://golfred.com/type> "hall" .
+_:N589ca08ecd0a44489274eb72fb1ba98d <http://golfred.com/text-past> "i took a {0}" .
+_:N644eeaa1e7e042c7a76d1183a62ad56b <http://golfred.com/type> "point" .
+_:N3d1d51dd610142668c6a695e42b64186 <http://golfred.com/type> "point" .
+_:N3d1d51dd610142668c6a695e42b64186 <http://golfred.com/label> "p7" .
+_:Nc5e60aca99f84fa1a02a30bd2a2b2fbb <http://golfred.com/label> "officei" .
+_:N91f5b441600f4b9088965326d2ebfc7a <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://xmlns.com/foaf/0.1/person> .
+_:Ne237891f61b54bffa195ec69a372d6b0 <http://golfred.com/type> "officee" .
+_:N5d9d0057396948f6a29460e6574c0885 <http://golfred.com/g_label> "ernesto_desk" .
+_:Ned98d81a262b41168e148e97b3da2d72 <http://golfred.com/weight> "2"^^<http://www.w3.org/2001/XMLSchema#integer> .
+_:N0b4e895fedc540b583d26f6bf9e4624d <http://golfred.com/template> _:Nfd1ac01514694e50b0a20a391116a959 .
+_:N91f5b441600f4b9088965326d2ebfc7a <http://xmlns.com/foaf/0.1/name> "Ivan Vladimir Meza Ruiz" .
+_:Ndda07196c65f45a3a0d5585e1c479915 <http://golfred.com/constraint> "text-inf" .
+_:N0b4e895fedc540b583d26f6bf9e4624d <http://golfred.com/label> "read" .
+_:Nd0257293503e4bca9ce642973e502987 <http://golfred.com/template> _:Nf7f9556f535644ef9c61f39c77c7bc3d .
+_:N5d9d0057396948f6a29460e6574c0885 <http://golfred.com/name> "desk" .
+_:Ne5d9e7f67be5450caf27edd339e6803d <http://golfred.com/inside> _:Nc5e60aca99f84fa1a02a30bd2a2b2fbb .
+_:N7009c36917714e6395764de7a72e904b <http://golfred.com/text-past> "i noticed  {0}" .
+_:N44b1e4204c59430abe748a65053d6b30 <http://golfred.com/label> "room" .
+_:Nfbd6d96d042d431abd9f05850642c32f <http://golfred.com/weight> "1"^^<http://www.w3.org/2001/XMLSchema#integer> .
+_:Nc2bc011ee94f44bba55eeabbdc87bf11 <http://golfred.com/text-past> "i turn myself off" .
+_:Nc2bc011ee94f44bba55eeabbdc87bf11 <http://golfred.com/weight> "1"^^<http://www.w3.org/2001/XMLSchema#integer> .
+_:Nd0257293503e4bca9ce642973e502987 <http://golfred.com/label> "analysis" .
+_:N3d1d51dd610142668c6a695e42b64186 <http://golfred.com/name> "door" .
+_:Nc2bc011ee94f44bba55eeabbdc87bf11 <http://golfred.com/text-inf> "to turn myself off" .
+_:Nd2851e6f626340178e678b213dc2782f <http://golfred.com/weight> "1"^^<http://www.w3.org/2001/XMLSchema#integer> .
+_:N6b21cf6037714beba9e33faa7f969cca <http://golfred.com/semantics> "yh:i(t) y:Agent(e2 t) k:{0}(m) y:Location(e2 m) y:start(e2)" .
+_:N0125e5de156444ffa55f9e2e1f97bc89 <http://golfred.com/label> "connect" .
+_:N0490cdd12ae4425c8737538ac8fbe3e0 <http://golfred.com/template> _:Nc2bc011ee94f44bba55eeabbdc87bf11 .
+_:Na1ba05b327a84d99b0a2feeef5e389be <http://golfred.com/template> _:Nb0709966ea0c4a17960b8bbc4f6d4f4a .
+_:N704f144846c04dcdbcfe3c9a0bed244c <http://golfred.com/template> _:N2979599b6d764ddb84fbe02c29a9491f .
+_:Ne5d9e7f67be5450caf27edd339e6803d <http://golfred.com/label> "p5" .
+_:Nd724b572f7db4b658899b87593a1778b <http://golfred.com/text-past> "i walked towards {0}" .
+_:N8457c2c33c2a4591bf0d2bbdca33da02 <http://golfred.com/text-inf> "to stop" .
+_:Nd0257293503e4bca9ce642973e502987 <http://golfred.com/template> _:Ncc2f20544d5845d2920ae3f40c1bae26 .
+_:Na9af71092a3c44bab0b708a5540fb97a <http://golfred.com/weight> "2"^^<http://www.w3.org/2001/XMLSchema#integer> .
+_:N8d0cff6fdac44cbfac0b56bf4a1e8a3b <http://golfred.com/semantics> "dg:i(h) d:Agent(e2 h) j:{0}(b) d:Theme(e2 b) d:take(e2)" .
+_:N9d10ade0827b4396b905844c6ed8a00a <http://golfred.com/template> _:Ndda07196c65f45a3a0d5585e1c479915 .
+_:N704f144846c04dcdbcfe3c9a0bed244c <http://golfred.com/label> "drop" .
+_:Nfd1ac01514694e50b0a20a391116a959 <http://golfred.com/weight> "2"^^<http://www.w3.org/2001/XMLSchema#integer> .
+_:N1a1fdd56888a4acda5ee697c373ce99e <http://golfred.com/text-inf> "to want" .
+_:Nfd1ac01514694e50b0a20a391116a959 <http://golfred.com/text-past> "it said {0}" .
+_:Nb0709966ea0c4a17960b8bbc4f6d4f4a <http://golfred.com/text-past> "i moved to {0}" .
+_:Na9af71092a3c44bab0b708a5540fb97a <http://golfred.com/text-past> "i dropped the {0}" .
+_:Ne5d9e7f67be5450caf27edd339e6803d <http://golfred.com/name> "desk" .
+_:N0490cdd12ae4425c8737538ac8fbe3e0 <http://golfred.com/template> _:Nfa87990aaca545a7a3c1d357b71de493 .
+_:N3d1d51dd610142668c6a695e42b64186 <http://golfred.com/g_label> "meeting_room_door" .
+_:Nd724b572f7db4b658899b87593a1778b <http://golfred.com/weight> "2"^^<http://www.w3.org/2001/XMLSchema#integer> .
+_:Nd2851e6f626340178e678b213dc2782f <http://golfred.com/text-inf> "to wake up at {loc}" .
+_:N0125e5de156444ffa55f9e2e1f97bc89 <http://golfred.com/template> _:N4dce90f7eef440e79ccaaa69b7b56236 .
+_:Nb93aa09e63c54fc5a18edd08b6fd53d9 <http://golfred.com/inside> _:Nc5e60aca99f84fa1a02a30bd2a2b2fbb .
+_:Nc8ba22084e0841728b7cce4b23f3a451 <http://golfred.com/name> "desk" .
+_:N9d10ade0827b4396b905844c6ed8a00a <http://golfred.com/label> "fail" .
+_:N0490cdd12ae4425c8737538ac8fbe3e0 <http://golfred.com/template> _:N8457c2c33c2a4591bf0d2bbdca33da02 .
+_:Na1ba05b327a84d99b0a2feeef5e389be <http://golfred.com/label> "move" .
+_:N644eeaa1e7e042c7a76d1183a62ad56b <http://golfred.com/name> "table" .
+_:Nb93aa09e63c54fc5a18edd08b6fd53d9 <http://golfred.com/type> "point" .
+_:Nb93aa09e63c54fc5a18edd08b6fd53d9 <http://golfred.com/g_label> "jorge_desk" .
+_:Nc5e60aca99f84fa1a02a30bd2a2b2fbb <http://golfred.com/g_label> "Ivan_Meza_s_cubicle" .
+_:Nd0257293503e4bca9ce642973e502987 <http://golfred.com/template> _:N7009c36917714e6395764de7a72e904b .
+_:N704f144846c04dcdbcfe3c9a0bed244c <http://golfred.com/semantics> "dg:i(h) d:Agent(e2 h) j:{0}(b) d:Theme(e2 b) d:drop(e2)" .
+_:Ne237891f61b54bffa195ec69a372d6b0 <http://golfred.com/name> "office of Ernesto" .
+_:Nf7f9556f535644ef9c61f39c77c7bc3d <http://golfred.com/weight> "1"^^<http://www.w3.org/2001/XMLSchema#integer> .
+_:Na1ba05b327a84d99b0a2feeef5e389be <http://golfred.com/template> _:N281bcdd6662445699e5aa968e144548d .
+_:N2d7930601f6347ebaafc126c7775ddf4 <http://golfred.com/text-past> "i read it said {0}" .
+_:N358f5b3556a74734a2fb8ed356b0e04d <http://golfred.com/name> "laboratory" .
+_:N9d10ade0827b4396b905844c6ed8a00a <http://golfred.com/template> _:N1a1fdd56888a4acda5ee697c373ce99e .
+_:N44345bb7a19044dab3fce42c7d7d04ed <http://golfred.com/text-past> "i grabbed a {0}" .
+_:Nfa87990aaca545a7a3c1d357b71de493 <http://golfred.com/text-inf> "to finish" .
+_:N44b1e4204c59430abe748a65053d6b30 <http://golfred.com/name> "meeting room" .
+_:Nd2851e6f626340178e678b213dc2782f <http://golfred.com/text-past> "i woke up at {loc}" .
+_:Na1ba05b327a84d99b0a2feeef5e389be <http://golfred.com/semantics> "yh:i(t) y:Theme(e2 t) k:{0}(m) y:Destination(e2 m) y:goTo(e2)" .
+_:N0490cdd12ae4425c8737538ac8fbe3e0 <http://golfred.com/label> "finish" .
+_:Nfbd6d96d042d431abd9f05850642c32f <http://golfred.com/text> "after that" .
+_:N4dce90f7eef440e79ccaaa69b7b56236 <http://golfred.com/text> "afterwards" .
+_:Nc8ba22084e0841728b7cce4b23f3a451 <http://golfred.com/inside> _:N358f5b3556a74734a2fb8ed356b0e04d .
+
