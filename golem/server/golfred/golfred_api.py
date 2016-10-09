@@ -61,6 +61,7 @@ def status():
 def list_experiences():
     exps=Experience.query.order_by(Experience.id.desc()).all()
     exps = [l.as_dict() for l in exps]
+    print(len(exps))
     return jsonify(exps)
 
 
@@ -414,8 +415,8 @@ def update_experience():
                     })
    
 
-@api.route('/v0.1/summary/<uuid>',methods=['GET'])
-@api.route('/summary/<uuid>',methods=['GET'])
+@api.route('/v0.1/summarize/experience/<uuid>',methods=['GET'])
+@api.route('/summarize/experience/<uuid>',methods=['GET'])
 def events2structure(uuid,confidence_analysis=0.3):
     res=[]
     try:

@@ -52,6 +52,73 @@ golfredApp.controller("experienceCtrl", ['$scope', '$rootScope', '$http', functi
 
 }]);
 
+
+
+golfredApp.controller("experienceAllCtrl", ['$scope', '$rootScope', '$http', function($scope, $rootScope,$http) {
+
+	$scope.experiences = [];
+	$scope.candidateDelete = [];
+
+	$scope.deleteExperience = function(exp){
+			$scope.candidateDelete=exp;
+	};
+
+	$scope.deleteExperienceReal = function(exp){		
+		var res = $http.post('/api/delete/experience',{"uuid":exp.uuid});
+		res.success(function(data, status, headers, config) {
+			$scope.loadExperiences();
+		});
+
+		res.error(function(data, status, headers, config) {
+			alert( "Error: " + data.msg);
+		});		
+	};
+
+	$scope.loadExperiences = function(){		
+		$http.get('/api/list/experiences').
+			success(function(data, status, headers, config){
+			$scope.experiences = data;
+		})
+		.error(function(error, status, headers, config) {
+			alert( "failure message ");
+		});		
+	};
+
+	$rootScope.$on('reload', function(event, args) {
+			$scope.loadExperiences();
+	});
+
+	$rootScope.$on('delete_experience', function(event, args) {
+			$scope.deleteExperienceReal($scope.candidateDelete);
+	});
+
+	$scope.loadExperiences();
+
+
+}]);
+
+
+golfredApp.controller("summaryCtrl", ['$scope', '$http', function($scope,$http) {
+
+	$scope.paragraphs=[];
+
+	$scope.init = function(uuid)
+	{
+		console.log(uuid);
+		$http.get('/api/summarize/experience/'+uuid)
+		.success(function(data, status, headers, config) {
+			$scope.paragraphs=data;
+		})
+		.error(function(data, status, headers, config) {
+			alert( "Error: " + data.msg);
+		});
+	};
+
+}]);
+
+
+
+
 golfredApp.controller("modalCreateCtrl", ['$scope','$http', function($scope, $http) {
 	
 	$scope.createExperience = function(isValid){		

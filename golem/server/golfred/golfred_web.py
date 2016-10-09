@@ -33,6 +33,9 @@ def service_running():
 def index():
     return render_template("main_menu.html")
 
+@web.route('/list/experience',methods=['GET'])
+def list_experience():
+    return render_template("experiences.html")
 
 @web.route('/edit/experience/<uuid>',methods=['GET'])
 def edit_experience(uuid):
@@ -41,6 +44,15 @@ def edit_experience(uuid):
         return render_template("edit_experience.html",exp=exp)
     except NoResultFound:
         return render_template("error.html",msg="No experience found with that id: "+uuid)
+
+@web.route('/summarize/experience/<uuid>',methods=['GET'])
+def summary(uuid):
+    try:
+        exp=Experience.query.filter(Experience.uuid==uuid).one()
+        return render_template("summary.html",uuid=uuid)
+    except NoResultFound:
+        return render_template("error.html",msg="No experience found with that id: "+uuid)
+
 
 @web.route('/visualize/experience/<uuid>',methods=['GET'])
 def visualize_experience(uuid):

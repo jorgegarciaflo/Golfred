@@ -4,15 +4,8 @@
 
 {% block content %}
 
-<div ng-controller="experienceCtrl" >
-<br/>
-<br/>
-<h3>Welcome to the website for <em>Machine reading for narrative generation of spatial experiences in service robots</em> project</h3>
-<br/>
-<br/>
-<p style="font-size:1.2em;">You can found more information of the project <a href="http://lipn.univ-paris13.fr/rcln/wiki/index.php/Machine_reading_for_narrative_generation_of_spatial_experiences_in_service_robots">here</a></p>
-<hr/>
-<p style="font-size:1.2em;">Recent experiences</p>
+<div ng-controller="experienceAllCtrl" >
+<p style="font-size:1.2em;">List of experiences</p>
 <td style="vertical-align: top">
 	<table class="table">
 		<tr>
@@ -25,7 +18,7 @@
 			<td>{[ exp.description ]}</td>
 			<td>
 				<a class="button" href="edit/experience/{[exp.uuid]}"><i class="fi-pencil"></i></a>
-				<a class="button" href="summarize/experience/{[exp.uuid]}"><i class="fi-eye"></i></a>
+				<a class="button" href="visualize/experience/{[exp.uuid]}"><i class="fi-eye"></i></a>
 				<button class="button" ng-click="deleteExperience(exp)" data-open="modal_delete"><i class="fi-trash"></i></button>
 			</td>
 		</tr>
