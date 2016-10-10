@@ -54,6 +54,16 @@ def summary(uuid):
         return render_template("error.html",msg="No experience found with that id: "+uuid)
 
 
+@web.route('/jeni/experience/<uuid>',methods=['GET'])
+def jeni(uuid):
+    try:
+        exp=Experience.query.filter(Experience.uuid==uuid).one()
+        return render_template("jeni.html",uuid=uuid)
+    except NoResultFound:
+        return render_template("error.html",msg="No experience found with that id: "+uuid)
+
+
+
 @web.route('/visualize/experience/<uuid>',methods=['GET'])
 def visualize_experience(uuid):
     form = MemoryForm()

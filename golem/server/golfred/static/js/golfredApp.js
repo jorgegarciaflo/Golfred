@@ -117,6 +117,24 @@ golfredApp.controller("summaryCtrl", ['$scope', '$http', function($scope,$http) 
 }]);
 
 
+golfredApp.controller("jeniCtrl", ['$scope', '$http', function($scope,$http) {
+
+	$scope.paragraphs=[];
+
+	$scope.init = function(uuid)
+	{
+		console.log(uuid);
+		$http.get('/api/lf/experience/'+uuid)
+		.success(function(data, status, headers, config) {
+			$scope.lfs=data;
+		})
+		.error(function(data, status, headers, config) {
+			alert( "Error: " + data.msg);
+		});
+	};
+
+}]);
+
 
 
 golfredApp.controller("modalCreateCtrl", ['$scope','$http', function($scope, $http) {

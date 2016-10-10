@@ -1,0 +1,52 @@
+{% extends "default.html" %}
+
+{% block title %}{% endblock %}
+
+{% block content %}
+
+<div ng-controller="jeniCtrl" ng-init="init('{{uuid}}')">
+
+<p style="font-size:1.2em;">Text</p>
+<td style="vertical-align: top">
+	<table class="table">
+		<tr>
+			<th>Phrase</th>
+		</tr>
+
+<!---
+		<tr ng-repeat="phrases in paragraphs">
+			<td> 
+			<span ng-repeat="phrase in phrases">
+				{[phrase]} 
+			</span>
+			</td>
+		</tr>
+-->
+	</table>
+</td>
+
+
+<p style="font-size:1.2em;">LF</p>
+<td style="vertical-align: top">
+	<table class="table">
+		<tr>
+			<th>Phrase</th>
+		</tr>
+
+		<tr ng-repeat="lf in lfs">
+			<td> 
+			<span ng-repeat="l in lf">
+				{[l]} 
+			</span>
+			</td>
+		</tr>
+	</table>
+</td>
+
+
+
+
+</div>
+
+
+{% endblock %}

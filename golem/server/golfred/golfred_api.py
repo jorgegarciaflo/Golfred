@@ -543,8 +543,8 @@ def events2structure(uuid,confidence_analysis=0.3):
 
         })
     
-@api.route('/v0.1/jeni/<uuid>',methods=['GET'])
-@api.route('/jeni/<uuid>',methods=['GET'])
+@api.route('/v0.1/lf/experience/<uuid>',methods=['GET'])
+@api.route('/lf/experience/<uuid>',methods=['GET'])
 def events2jeni(uuid,confidence_analysis=0.3):
     res=[]
     try:
