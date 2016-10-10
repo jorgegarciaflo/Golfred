@@ -15,6 +15,8 @@ import keys
 import json
 import fredlib
 import random
+import os
+import subprocess
 from rdflib import Graph, Literal, BNode, Namespace, RDF, URIRef
 
 ns=Namespace('http://golfred.com/')
@@ -224,8 +226,6 @@ def kb_generatesemantics(g,l):
 
     return semantics
 
-
-
 def kb_drawtemplate(g,l,curr,C="text-past"):
     if len(curr)>0:
         if curr[-1][1]:
@@ -257,3 +257,12 @@ def kb_drawtemplate(g,l,curr,C="text-past"):
         return None,C
 
 
+
+def jeni(uuid):
+    #./run.sh -g golfredTests/grammar/valuation.xml -l golfredTests/lexicon/lexique.lex -o output -s golfredTests/test.geni
+
+    os.chdir('../../../../software/jeni')
+    cmd="./run.sh -g golfredTests/grammar/valuation.xml -l golfredTests/lexicon/lexique.lex -o ../../projects/golfred/golem/server/jeni/"+uuid+" -s ../../projects/golfred/golem/server/jeni/"+uuid+".jeni"
+    subprocess.call(cmd.split())
+    os.chdir('../../projects/golfred/golem/server')
+    return "hello"

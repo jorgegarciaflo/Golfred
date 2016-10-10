@@ -684,7 +684,7 @@ def events2jeni(uuid,confidence_analysis=0.3):
             else:
                 pass
         #print(res)   
-        f=open(uuid+'.jeni','w')
+        f=open("jeni/"+uuid+'.jeni','w')
         c=0
         for segment in res:
             for semantics,n in segment:
@@ -693,6 +693,8 @@ def events2jeni(uuid,confidence_analysis=0.3):
                 print("",file=f)
                 c+=1
         f.close()
+        phrases=golfred.jeni(uuid)
+        print(phrases)
         return json.dumps([[x for x,y in b] for  b in res])
     except NoResultFound:
         return json.dumps({
