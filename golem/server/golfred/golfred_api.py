@@ -684,7 +684,7 @@ def events2jeni(uuid,confidence_analysis=0.3):
             else:
                 pass
         #print(res)   
-        f=open('golfred.jeni','w')
+        f=open(uuid+'.jeni','w')
         c=0
         for segment in res:
             for semantics,n in segment:

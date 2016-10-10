@@ -11,6 +11,8 @@
 <br/>
 <br/>
 <p style="font-size:1.2em;">You can found more information of the project <a href="http://lipn.univ-paris13.fr/rcln/wiki/index.php/Machine_reading_for_narrative_generation_of_spatial_experiences_in_service_robots">here</a></p>
+<br/>
+<a href="/list/experience" class='button success' data-open="modal_create">List of experiences</a>
 <hr/>
 <p style="font-size:1.2em;">Recent experiences</p>
 <td style="vertical-align: top">
@@ -24,9 +26,9 @@
 			<td>{[ exp.name ]}</td>
 			<td>{[ exp.description ]}</td>
 			<td>
-				<a class="button" href="edit/experience/{[exp.uuid]}"><i class="fi-pencil"></i></a>
-				<a class="button" href="summarize/experience/{[exp.uuid]}"><i class="fi-eye"></i></a>
-				<a class="button" href="jeni/experience/{[exp.uuid]}"><i class="fi-torso-female"></i></a>
+				<a class="button" href="/edit/experience/{[exp.uuid]}"><i class="fi-pencil"></i></a>
+				<a class="button" href="/summarize/experience/{[exp.uuid]}"><i class="fi-eye"></i></a>
+				<a class="button" href="/jeni/experience/{[exp.uuid]}"><i class="fi-torso-female"></i></a>
 				<button class="button" ng-click="deleteExperience(exp)" data-open="modal_delete"><i class="fi-trash"></i></button>
 			</td>
 		</tr>
